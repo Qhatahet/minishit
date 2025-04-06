@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   detect_type.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:16:39 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/05 18:31:23 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/06 13:16:51 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ int	check_built_ins(t_parser *parser, t_token *temp)
 		temp->type[parser->index] = COMMAND;
 		parser->commands_counter++;
 		parser->command_flag = 1;
+		parser->filename_flag = 1;
+		parser->parser_flag = 1;
 		return (1);
 	}
 	else
@@ -57,6 +59,8 @@ void	detect_command(t_parser *parser, t_token *temp, char **paths)
 			temp->type[parser->index] = COMMAND;
 			parser->commands_counter++;
 			parser->command_flag = 1;
+			parser->filename_flag = 1;
+			parser->parser_flag = 1;
 			break ;
 		}
 		i++;
@@ -72,6 +76,7 @@ void	detect_arguments(t_parser *parser, t_token *temp)
 	{
 		temp->type[parser->index] = ARGUMENT;
 		parser->arguments_counter++;
+		parser->parser_flag = 1;
 	}
 }
 
@@ -82,23 +87,32 @@ void	detect_heredoc(t_parser *parser, t_token *temp)
 		temp->type[parser->index] = HEREDOC;
 		parser->heredocs_counter++;
 		parser->filename_flag = 1;
+		parser->parser_flag = 1;
 	}
 	else if (ft_strncmp(temp->content[parser->index], ">>", 2) == 0)
 	{
 		temp->type[parser->index] = APPEND;
 		parser->append_counter++;
 		parser->filename_flag = 1;
+		parser->parser_flag = 1;
 	}
 }
 
 void	detect_redirect(t_parser *parser, t_token *temp)
 {
-	if (*temp->content[parser->index] == '>'
-		|| *temp->content[parser->index] == '<')
+	if (*temp->content[parser->index] == '>')
 	{
-		temp->type[parser->index] = REDIRECT;
+		temp->type[parser->index] = REDIRECTOUT;
 		parser->redirect_counter++;
 		parser->filename_flag = 1;
+		parser->parser_flag = 1;
+	}
+	else if (*temp->content[parser->index] == '<')
+	{
+		temp->type[parser->index] = REDIRECTIN;
+		parser->redirect_counter++;
+		parser->filename_flag = 1;
+		parser->parser_flag = 1;
 	}
 }
 
@@ -106,4 +120,5 @@ void	detect_filename(t_parser *parser, t_token *temp)
 {
 	temp->type[parser->index] = FILENAME;
 	parser->filename_counter++;
+	parser->parser_flag = 1;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/05 17:47:10 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/06 10:29:45 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,11 @@ void	print_type(t_type type)
 	case TEXT:
 		printf("TEXT\n");
 		break ;
-	case REDIRECT:
-		printf("REDIRECT\n");
+	case REDIRECTOUT:
+		printf("REDIRECTOUT\n");
+		break ;
+	case REDIRECTIN:
+		printf("REDIRECTIN\n");
 		break ;
 	case FILENAME:
 		printf("FILENAME\n");
@@ -117,8 +120,8 @@ int	main(int argc, char **argv, char **env)
 		else
 			exit(EXIT_FAILURE);
 	}
-	free(shell);
 	rl_clear_history();
 	free(shell->prompt);
+	free(shell);
 	return (0);
 }

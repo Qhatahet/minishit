@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/05 18:29:15 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/06 10:53:35 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ typedef struct s_parser
 	int				index;
 	int				filename_flag;
 	int				command_flag;
+	int				parser_flag;
 }					t_parser;
 
 typedef struct s_shell
@@ -65,13 +66,14 @@ typedef struct s_shell
 
 typedef enum s_type
 {
-	TEXT,
 	COMMAND,
+	FILENAME,
+	TEXT,
 	ARGUMENT,
 	HEREDOC,
 	APPEND,
-	REDIRECT,
-	FILENAME
+	REDIRECTOUT,
+	REDIRECTIN
 }					t_type;
 
 typedef struct s_token
