@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:04:10 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/06 13:18:21 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/11 02:25:27 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,15 +69,12 @@ void	ft_parser(t_token *head, t_parser *parser, t_shell *shell)
 		parser->command_flag = 0;
 		while (head->content[parser->index])
 		{
-			parser->parser_flag = 0;
 			parser->filename_flag = 0;
-			if (parser->command_flag == 0)
+			if (!parser->command_flag)
 				detect_command(parser, head, shell->paths);
 			detect_arguments(parser, head);
 			detect_redirect(parser, head);
 			detect_heredoc(parser, head);
-			if (!parser->parser_flag && parser->filename_flag)
-				head->type[parser->index] = TEXT;
 			parser->index++;
 			if (parser->filename_flag)
 				detect_filename(parser, head);
