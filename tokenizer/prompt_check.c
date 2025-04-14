@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   prompt_check.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/22 23:10:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/03/26 16:27:06 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/04/12 18:45:04 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,12 @@ void	check_prompt_2(t_shell *shell, t_token **token)
 		(*token)->content[shell->token_index++] = ft_strdup(">");
 		shell->prompt_index++;
 	}
-	while (shell->prompt[shell->prompt_index] == ' ')
-		shell->prompt_index++;
+	skip_spaces(shell);
+	if (!shell->prompt[shell->prompt_index])
+	{
+		shell->token_flag = 1;
+		printf("arssh: syntax error near unexpected token `newline'\n");
+	}
 }
 
 void	check_prompt_3(t_shell *shell, t_token **token)

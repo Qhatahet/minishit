@@ -3,14 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   token_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:03:27 by oalananz          #+#    #+#             */
-/*   Updated: 2025/03/26 16:26:30 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/04/12 18:43:05 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void	skip_spaces(t_shell *shell)
+{
+	while (shell->prompt[shell->prompt_index] == ' ')
+		shell->prompt_index++;
+}
 
 t_token	*create_new_node(t_shell *shell)
 {

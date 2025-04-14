@@ -1,6 +1,6 @@
 CC = cc
 
-CFLAGS = -Werror -Wextra -Wall -g -IHeaders
+CFLAGS = -Werror -Wextra -Wall -g -IHeaders #-fsanitize=address
 
 LIBFT_DIR = libft
 
@@ -14,6 +14,7 @@ SRCS = main.c \
 	./built-in/echo/echo_command.c \
 	./built-in/export/export.c ./built-in/export/export_utils.c \
 	./built-in/unset.c \
+	./execution/execution.c\
 
 OBJS_DIR := objects
 OBJS = $(SRCS:%.c=$(OBJS_DIR)/%.o)

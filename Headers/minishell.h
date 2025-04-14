@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/11 02:25:13 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/14 18:39:01 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/wait.h>
+#include <sys/types.h>
 
 typedef struct s_env
 {
@@ -52,6 +53,7 @@ typedef struct s_shell
 {
 	char			**paths;
 	char			*prompt;
+	char			**enviroment;
 	int				prompt_index;
 	int				token_index;
 	int				token_flag;
@@ -150,4 +152,10 @@ void 	scan_env(t_shell *shell, t_export *export);
 // unset command
 void	unset_command(t_shell *shell, t_token *token);
 
+// testing
+void	execute(t_shell *shell, t_token *tokens);
+void	add_backslash(t_shell *shell);
+void	get_paths(t_shell *shell);
+
+void	skip_spaces(t_shell *shell);
 #endif

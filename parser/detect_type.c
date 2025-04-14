@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   detect_type.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:16:39 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/11 02:34:31 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/12 17:27:39 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,4 +112,5 @@ void	detect_filename(t_parser *parser, t_token *temp)
 {
 	temp->type[parser->index] = FILENAME;
 	parser->filename_counter++;
+	parser->index++;
 }
