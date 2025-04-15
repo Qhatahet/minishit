@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 13:59:09 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/12 18:46:37 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/15 17:41:11 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,13 @@ t_token	*tokenizer(t_shell *shell)
 		check_errors(shell);
 		check_prompt_2(shell, &token);
 		if (shell->token_flag)
+		{
+			ft_free_2d(head->content);
+			// ft_free_2d(head->content);
+			free (head);
+			// free (head);
 			return (NULL);
+		}
 		check_prompt_3(shell, &token);
 		while (shell->prompt_index < (int)ft_strlen(shell->prompt)
 			&& shell->prompt[shell->prompt_index] == ' ')

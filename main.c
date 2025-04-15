@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/14 17:46:30 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/15 17:57:39 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,23 @@ void	ft_executor(t_shell *shell, t_token *token)
 	}
 }
 
+void	free_env(t_env *env)
+{
+	while(env)
+	{
+		free(env->variable);
+		free(env->content);
+		env = env->next;
+	}
+	free(env);
+}
+
+void	free_tokenizer(t_token *tokens)
+{
+	ft_free_2d(tokens->content);
+	free(tokens->type);
+}
+
 // take the arguments and the enviroment
 int	main(int argc, char **argv, char **env)
 {
@@ -115,11 +132,13 @@ int	main(int argc, char **argv, char **env)
 			ft_parser(tokens, parser, shell);
 			// ft_expander(shell, tokens);
 			ft_executor(shell, tokens);
-			execute(shell, tokens);
-			// print_tokens(tokens);
+			if (tokens)
+				execute(shell, tokens);
 		}
 		else
 			exit(0);
+		if (tokens)
+			free_tokenizer(tokens);
 	}
 	rl_clear_history();
 	free(shell->prompt);
