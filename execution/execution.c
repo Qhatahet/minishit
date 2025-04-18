@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/04/15 17:33:23 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/18 16:26:00 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ char	**get_env(t_env *env)
 {
 	t_env	*temp;
 	char	**envp;
+	char	*str;
 	int			i;
 
 	temp = env;
@@ -81,11 +82,20 @@ char	**get_env(t_env *env)
 	i = 0;
 	while (temp)
 	{
-		temp->variable = ft_strjoin(temp->variable, "=");
-		envp[i] = ft_strjoin(temp->variable, temp->content);
+		char *t3res_test;
+		str = malloc(ft_strlen(temp->variable) + ft_strlen(temp->content) + 2);
+		t3res_test = str;
+		str = ft_strjoin(temp->variable, "=");
+		free(t3res_test);
+		t3res_test = str;
+		str = ft_strjoin(str, temp->content);
+		free (t3res_test);
+		envp[i] = ft_strdup(str);
+		free(str);
 		temp = temp->next;
 		i++;
 	}
+	envp[i] = NULL;
 	return (envp);
 }
 
@@ -107,38 +117,69 @@ void	execute_command(t_token *tokens, t_shell *shell)
 		i++;
 	}
 	lst[i] = NULL;
-	get_paths(shell);
 	int	id = fork();
 	if (id == 0)
 	{
 		int	j = 0;
+		get_paths(shell);
 		if (shell->enviroment)
 			ft_free_2d(shell->enviroment);
 		if (!shell->enviroment)
 			shell->enviroment = get_env(shell->env);
-		while (shell->paths[j])
+		while (shell->paths[j] && shell->paths)
 		{
 			cmd = ft_strjoin(shell->paths[j], lst[0]);
+			// printf("%s\n", cmd);
 			if (!cmd)
 				exit(EXIT_FAILURE);
 			if (!access(cmd, X_OK))
 				break;
+			free(cmd);
+			cmd = NULL;
 			j++;
 		}
+		// printf("%s\n", cmd);
 		ft_free_2d(shell->paths);
-		if (shell->enviroment)
+		if (!cmd)
 		{
-			if((execve(cmd, lst, shell->enviroment)) == -1)
-			{
+			ft_printf("command not found\n");
+			if (lst)
 				ft_free_2d(lst);
+			if(shell->enviroment)
+			{
 				ft_free_2d(shell->enviroment);
-				printf("hello\n");
+				shell->enviroment = NULL;
 			}
+			exit(EXIT_FAILURE);
+		}
+		if((execve(cmd, lst, shell->enviroment)) == -1)
+		{
+			// ft_free_2d(shell->enviroment);
+			// ft_free_2d(lst);
+			printf("hello\n");
 		}
 	}
 	wait(NULL);
-	if (lst)
-		ft_free_2d(lst);
+	i = 0;
+	if (lst && lst[i])
+	{
+		while (lst[i])
+		{
+			free(lst[i]);
+			i++;
+		}
+		free(lst);
+	}
+	if(shell->enviroment)
+	{
+		ft_free_2d(shell->enviroment);
+		shell->enviroment = NULL;
+	}
+	// if (shell->paths[0] && shell->paths)
+	// {
+	// 	ft_free_2d(shell->paths);
+	// 	shell->paths = NULL;
+	// }
 }
 
 void	execute(t_shell *shell, t_token *tokens)
@@ -153,6 +194,11 @@ void	execute(t_shell *shell, t_token *tokens)
 	else
 	{
 		// if(is_there_command(tokens))
-			execute_command(tokens, shell);
+		execute_command(tokens, shell);
+		// if (shell->paths)
+		// {
+		// 	ft_free_2d(shell->paths);
+		// 	shell->paths = NULL;
+		// }
 	}
 }

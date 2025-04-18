@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/15 17:57:39 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/18 16:35:09 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,10 @@ void	free_env(t_env *env)
 {
 	while(env)
 	{
-		free(env->variable);
-		free(env->content);
+		if (env->variable)
+			free(env->variable);
+		if (env->content)
+			free(env->content);
 		env = env->next;
 	}
 	free(env);
@@ -98,16 +100,78 @@ void	free_env(t_env *env)
 
 void	free_tokenizer(t_token *tokens)
 {
-	ft_free_2d(tokens->content);
-	free(tokens->type);
+	while (tokens)
+	{
+		if (tokens->content[0] && tokens->content)
+			ft_free_2d(tokens->content);
+		if (tokens->type)
+			free(tokens->type);
+		tokens = tokens->next;
+	}
+	free(tokens);
+}
+
+void	init_minishell(t_shell *shell)
+{
+	t_token		*tokens;
+	t_parser	*parser;
+
+	while (1)
+	{
+		shell->prompt = readline("Arab Spring 🐣🐥 -> ");
+		if (shell->prompt)
+		{
+			add_history(shell->prompt);
+			tokens = tokenizer(shell);
+			parser = ft_calloc(1, sizeof(t_parser));
+			if (!parser)
+				exit(EXIT_FAILURE);
+			ft_parser(tokens, parser, shell);
+			// ft_expander(shell, tokens);
+			ft_executor(shell, tokens);
+			if (tokens)
+				execute(shell, tokens);
+			free(parser);
+			if(shell->enviroment)
+			{
+				ft_free_2d(shell->enviroment);
+				shell->enviroment = NULL;
+			}
+			if (tokens)
+			{
+				free_tokenizer(tokens);
+				free (tokens);
+				tokens = NULL;
+			}
+		}
+		else
+		{
+			if (shell->env)
+			{
+				free_env(shell->env);
+				// free (shell->env);
+			}
+			// if (shell->paths)
+			// {
+			// 	ft_free_2d(shell->paths);
+			// 	shell->paths = NULL;
+			// }
+			free(shell);
+			exit(0);
+		}
+		if (tokens)
+		{
+			free_tokenizer(tokens);
+			free (tokens);
+			tokens= NULL;
+		}
+	}
 }
 
 // take the arguments and the enviroment
 int	main(int argc, char **argv, char **env)
 {
 	t_shell		*shell;
-	t_token		*tokens;
-	t_parser	*parser;
 
 	(void)argv;
 	if (argc > 1)
@@ -118,30 +182,15 @@ int	main(int argc, char **argv, char **env)
 	shell = ft_calloc(1, sizeof(t_shell));
 	if (!shell)
 		exit(EXIT_FAILURE);
-	parser = ft_calloc(1, sizeof(t_parser));
-	if (!parser)
-		exit(EXIT_FAILURE);
 	env_copy(shell, env);
-	while (1)
+	init_minishell(shell);
+	if (shell->env)
 	{
-		shell->prompt = readline("Arab Spring 🐣🐥 -> ");
-		if (shell->prompt)
-		{
-			add_history(shell->prompt);
-			tokens = tokenizer(shell);
-			ft_parser(tokens, parser, shell);
-			// ft_expander(shell, tokens);
-			ft_executor(shell, tokens);
-			if (tokens)
-				execute(shell, tokens);
-		}
-		else
-			exit(0);
-		if (tokens)
-			free_tokenizer(tokens);
+		free_env(shell->env);
+		free(shell->env);
 	}
-	rl_clear_history();
 	free(shell->prompt);
 	free(shell);
+	rl_clear_history();
 	return (0);
 }
