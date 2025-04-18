@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/14 18:39:01 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/18 18:55:21 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,9 +153,11 @@ void 	scan_env(t_shell *shell, t_export *export);
 void	unset_command(t_shell *shell, t_token *token);
 
 // testing
-void	execute(t_shell *shell, t_token *tokens);
+void	execute(t_shell *shell, t_token *tokens, t_parser *parser);
 void	add_backslash(t_shell *shell);
 void	get_paths(t_shell *shell);
+void	free_tokenizer(t_token *tokens);
+void	free_env(t_env *env);
 
 void	skip_spaces(t_shell *shell);
 #endif

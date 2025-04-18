@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/18 16:35:09 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/18 18:55:04 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void	free_tokenizer(t_token *tokens)
 {
 	while (tokens)
 	{
-		if (tokens->content[0] && tokens->content)
+		if (tokens->content)
 			ft_free_2d(tokens->content);
 		if (tokens->type)
 			free(tokens->type);
@@ -130,7 +130,7 @@ void	init_minishell(t_shell *shell)
 			// ft_expander(shell, tokens);
 			ft_executor(shell, tokens);
 			if (tokens)
-				execute(shell, tokens);
+				execute(shell, tokens, parser);
 			free(parser);
 			if(shell->enviroment)
 			{

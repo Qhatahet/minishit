@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/04/18 16:26:00 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/18 18:57:21 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,14 +82,14 @@ char	**get_env(t_env *env)
 	i = 0;
 	while (temp)
 	{
-		char *t3res_test;
+		// char *t3res_test;
 		str = malloc(ft_strlen(temp->variable) + ft_strlen(temp->content) + 2);
-		t3res_test = str;
+		// t3res_test = str;
 		str = ft_strjoin(temp->variable, "=");
-		free(t3res_test);
-		t3res_test = str;
+		// free(t3res_test);
+		// t3res_test = str;
 		str = ft_strjoin(str, temp->content);
-		free (t3res_test);
+		// free (t3res_test);
 		envp[i] = ft_strdup(str);
 		free(str);
 		temp = temp->next;
@@ -99,7 +99,7 @@ char	**get_env(t_env *env)
 	return (envp);
 }
 
-void	execute_command(t_token *tokens, t_shell *shell)
+void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 {
 	char	*cmd;
 	char	**lst;
@@ -129,7 +129,6 @@ void	execute_command(t_token *tokens, t_shell *shell)
 		while (shell->paths[j] && shell->paths)
 		{
 			cmd = ft_strjoin(shell->paths[j], lst[0]);
-			// printf("%s\n", cmd);
 			if (!cmd)
 				exit(EXIT_FAILURE);
 			if (!access(cmd, X_OK))
@@ -138,26 +137,24 @@ void	execute_command(t_token *tokens, t_shell *shell)
 			cmd = NULL;
 			j++;
 		}
-		// printf("%s\n", cmd);
 		ft_free_2d(shell->paths);
 		if (!cmd)
 		{
 			ft_printf("command not found\n");
 			if (lst)
 				ft_free_2d(lst);
+			free_tokenizer(tokens);
 			if(shell->enviroment)
 			{
 				ft_free_2d(shell->enviroment);
 				shell->enviroment = NULL;
 			}
+			free_env(shell->env);
+			free(shell);
+			free(parser);
 			exit(EXIT_FAILURE);
 		}
-		if((execve(cmd, lst, shell->enviroment)) == -1)
-		{
-			// ft_free_2d(shell->enviroment);
-			// ft_free_2d(lst);
-			printf("hello\n");
-		}
+		execve(cmd, lst, shell->enviroment);
 	}
 	wait(NULL);
 	i = 0;
@@ -182,7 +179,7 @@ void	execute_command(t_token *tokens, t_shell *shell)
 	// }
 }
 
-void	execute(t_shell *shell, t_token *tokens)
+void	execute(t_shell *shell, t_token *tokens, t_parser *parser)
 {
 	(void)shell;
 	if (!tokens->content)
@@ -194,7 +191,7 @@ void	execute(t_shell *shell, t_token *tokens)
 	else
 	{
 		// if(is_there_command(tokens))
-		execute_command(tokens, shell);
+		execute_command(tokens, shell, parser);
 		// if (shell->paths)
 		// {
 		// 	ft_free_2d(shell->paths);
