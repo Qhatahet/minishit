@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/04/18 18:57:21 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/18 20:52:43 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,22 +76,18 @@ char	**get_env(t_env *env)
 	char	**envp;
 	char	*str;
 	int			i;
+	char		*tmp;
 
 	temp = env;
 	envp = ft_calloc((count_env(env) + 1), sizeof(char *));
 	i = 0;
 	while (temp)
 	{
-		// char *t3res_test;
-		str = malloc(ft_strlen(temp->variable) + ft_strlen(temp->content) + 2);
-		// t3res_test = str;
-		str = ft_strjoin(temp->variable, "=");
-		// free(t3res_test);
-		// t3res_test = str;
-		str = ft_strjoin(str, temp->content);
-		// free (t3res_test);
+		tmp = ft_strjoin(temp->variable, "=");
+		str = ft_strjoin(tmp, temp->content);
 		envp[i] = ft_strdup(str);
 		free(str);
+		free(tmp);
 		temp = temp->next;
 		i++;
 	}
@@ -117,13 +113,13 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 		i++;
 	}
 	lst[i] = NULL;
+	if (shell->enviroment)
+		ft_free_2d(shell->enviroment);
 	int	id = fork();
 	if (id == 0)
 	{
 		int	j = 0;
 		get_paths(shell);
-		if (shell->enviroment)
-			ft_free_2d(shell->enviroment);
 		if (!shell->enviroment)
 			shell->enviroment = get_env(shell->env);
 		while (shell->paths[j] && shell->paths)
@@ -144,12 +140,15 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 			if (lst)
 				ft_free_2d(lst);
 			free_tokenizer(tokens);
+			free (tokens);
 			if(shell->enviroment)
 			{
 				ft_free_2d(shell->enviroment);
-				shell->enviroment = NULL;
+				// free(shell->enviroment);
+				// shell->enviroment = NULL;
 			}
 			free_env(shell->env);
+			free(shell->env);
 			free(shell);
 			free(parser);
 			exit(EXIT_FAILURE);
@@ -172,11 +171,6 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 		ft_free_2d(shell->enviroment);
 		shell->enviroment = NULL;
 	}
-	// if (shell->paths[0] && shell->paths)
-	// {
-	// 	ft_free_2d(shell->paths);
-	// 	shell->paths = NULL;
-	// }
 }
 
 void	execute(t_shell *shell, t_token *tokens, t_parser *parser)

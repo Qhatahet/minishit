@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/18 18:55:04 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/18 20:53:07 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,6 @@ void	init_minishell(t_shell *shell)
 				exit(EXIT_FAILURE);
 			ft_parser(tokens, parser, shell);
 			// ft_expander(shell, tokens);
-			ft_executor(shell, tokens);
 			if (tokens)
 				execute(shell, tokens, parser);
 			free(parser);
@@ -140,7 +139,7 @@ void	init_minishell(t_shell *shell)
 			if (tokens)
 			{
 				free_tokenizer(tokens);
-				free (tokens);
+				free(tokens);
 				tokens = NULL;
 			}
 		}
@@ -149,12 +148,13 @@ void	init_minishell(t_shell *shell)
 			if (shell->env)
 			{
 				free_env(shell->env);
-				// free (shell->env);
+				// free(shell->env);
 			}
-			// if (shell->paths)
+			// if (tokens)
 			// {
-			// 	ft_free_2d(shell->paths);
-			// 	shell->paths = NULL;
+			// 	free_tokenizer(tokens);
+			// 	free(tokens);
+			// 	tokens = NULL;
 			// }
 			free(shell);
 			exit(0);
