@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/08 15:38:30 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/09 14:34:04 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -407,8 +407,7 @@ char	**create_list(t_token *tokens, t_fds *fd, t_shell *shell)
 		}
 		return (redirect_lst);
 	}
-	else
-		return (lst);
+	return (lst);
 }
 
 void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
@@ -419,9 +418,9 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 	int		j;
 
 	fd = ft_calloc(1, sizeof(t_fds));
-	fd->temp = NULL;
 	if (!fd)
 		return ;
+	fd->temp = ft_strdup("");
 	shell->cmd_list = create_list(tokens, fd, shell);
 	if (!shell->cmd_list)
 		return ;

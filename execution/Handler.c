@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:23:53 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/09 14:05:35 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/09 14:48:34 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -478,6 +478,7 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                 if(is_there_redirect(tokens))
                 {
                     dup2(pipes[i][1],STDOUT_FILENO);
+					close (pipes[i][1]);
                     int x = 0;
                     int count_rout = 0;
                     int count_rin = 0;
@@ -508,7 +509,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_append == 1)
+							{
                                 dup2(pipes[i - 1][0],STDIN_FILENO);
+								close (pipes[i - 1][0]);
+							}
                             dup2(file_fd, STDOUT_FILENO);
                             close(file_fd);
                         }
@@ -523,7 +527,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_rin == 1 && !is_there_redirectout(tokens))
+							{
                                 dup2(pipes[i][1], STDOUT_FILENO);
+								close(pipes[i][1]);
+							}
                             dup2(file_fd, STDIN_FILENO);
                             close(file_fd);
                         }
@@ -533,13 +540,13 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                 else
                 {
                     dup2(pipes[i][1], STDOUT_FILENO);
+					close(pipes[i][1]);
                 }
             }
             else if (i == pipes_count)
             {
                 if(is_there_redirect(tokens))
                 {
-                    dup2(pipes[i][1],STDOUT_FILENO);
                     int x = 0;
                     int count_rout = 0;
                     int count_rin = 0;
@@ -557,7 +564,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_rout == 1 && !is_there_redirectin(tokens))
+							{
                                 dup2(pipes[i - 1][0],STDIN_FILENO);
+								close (pipes[i - 1][0]);
+							}
                             dup2(file_fd, STDOUT_FILENO);
                             close(file_fd);
                         }
@@ -572,7 +582,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_append == 1)
+							{
                                 dup2(pipes[i - 1][0],STDIN_FILENO);
+								close (pipes[i - 1][0]);
+							}
                             dup2(file_fd, STDOUT_FILENO);
                             close(file_fd);
                         }
@@ -595,8 +608,12 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                 else
                 {
                     dup2(pipes[i - 1][0], STDIN_FILENO);
+					close(pipes[i - 1][0]);
                     if (i != pipes_count)
+					{
                         dup2(pipes[i][1], STDOUT_FILENO);
+						close(pipes[i][1]);
+					}
                 }
             }
             else
@@ -604,6 +621,7 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                 if(is_there_redirect(tokens))
                 {
                     dup2(pipes[i][1],STDOUT_FILENO);
+					close (pipes[i][1]);
                     int x = 0;
                     int count_rout = 0;
                     int count_rin = 0;
@@ -621,7 +639,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_rout == 1 && !is_there_redirectin(tokens))
+							{
                                 dup2(pipes[i - 1][0],STDIN_FILENO);
+								close(pipes[i - 1][0]);
+							}
                             dup2(file_fd, STDOUT_FILENO);
                             close(file_fd);
                         }
@@ -636,7 +657,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_append == 1)
+							{
                                 dup2(pipes[i - 1][0],STDIN_FILENO);
+								close (pipes[i - 1][0]);
+							}
                             dup2(file_fd, STDOUT_FILENO);
                             close(file_fd);
                         }
@@ -651,7 +675,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                                 exit(EXIT_FAILURE);
                             }
                             if(count_rin == 1 && !is_there_redirectout(tokens))
+							{
                                 dup2(pipes[i][1], STDOUT_FILENO);
+								close (pipes[i][1]);
+							}
                             dup2(file_fd, STDIN_FILENO);
                             close(file_fd);
                         }
@@ -661,8 +688,12 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                 else
                 {
                     dup2(pipes[i - 1][0], STDIN_FILENO);
+					close (pipes[i - 1][0]);
                     if (i != pipes_count)
+					{
                         dup2(pipes[i][1], STDOUT_FILENO);
+						close(pipes[i][1]);
+					}
                 }
             }
             if(is_there_command(tokens))

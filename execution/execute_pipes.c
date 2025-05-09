@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/09 13:48:48 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/09 14:08:02 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/09 14:32:37 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ void	execute_pipes(t_token *tokens, t_shell *shell, t_parser *parser)
 
 	i = 0;
 	temp = tokens;
+	fds = ft_calloc(sizeof(t_fds) , 1);
 	while (i < how_many_pipes(tokens))
 	{
 		if (pipe(pipes[i]) == -1) 
@@ -34,7 +35,7 @@ void	execute_pipes(t_token *tokens, t_shell *shell, t_parser *parser)
 	i = 0;
 	while (i < how_many_pipes(tokens) + 1 && temp)
 	{
-		shell->cmd_list;
+		shell->cmd_list = create_list(tokens, fds, shell);
 		pids[i] = fork();
 	}
 }
