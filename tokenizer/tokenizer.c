@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 13:59:09 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/15 17:41:11 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/22 18:55:35 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@ int	check_pipe(t_shell *shell)
 	int	i;
 
 	i = shell->prompt_index;
+	if (shell->prompt[0] == '|')
+		return (-1);
 	if (shell->prompt[i] == '|')
 		i++;
 	if (shell->prompt[i] == '\0')
@@ -86,9 +88,7 @@ t_token	*tokenizer(t_shell *shell)
 		if (shell->token_flag)
 		{
 			ft_free_2d(head->content);
-			// ft_free_2d(head->content);
 			free (head);
-			// free (head);
 			return (NULL);
 		}
 		check_prompt_3(shell, &token);

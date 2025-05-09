@@ -6,15 +6,15 @@ LIBFT_DIR = libft
 
 LIBFT = $(LIBFT_DIR)/libft.a
 
-SRCS = main.c \
+SRCS = main.c signals.c\
     ./built-in/environment/env.c ./built-in/environment/env_utils.c\
 	./tokenizer/tokenizer.c ./tokenizer/token_utils.c ./tokenizer/token_size.c ./tokenizer/prompt_check.c \
 	./parser/detect_type.c ./parser/parser.c \
-	./expander/expander.c  ./expander/expander_utils.c ./expander/expander_env.c ./expander/ft_outjoin.c \
+	./expander/expander.c  ./expander/expander_quotes.c ./expander/expander_env.c ./expander/expand_dollar.c \
 	./built-in/echo/echo_command.c \
 	./built-in/export/export.c ./built-in/export/export_utils.c \
-	./built-in/unset.c \
-	./execution/execution.c\
+	./built-in/unset.c ./built-in/cd.c ./built-in/pwd.c\
+	./execution/execution.c ./execution/HereDoc/heredoc.c ./execution/Handler.c\
 
 OBJS_DIR := objects
 OBJS = $(SRCS:%.c=$(OBJS_DIR)/%.o)

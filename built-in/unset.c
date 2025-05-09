@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   unset.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 21:54:42 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/01 21:54:50 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/04/28 22:05:04 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,29 +39,23 @@ void	delete_node(t_shell *shell, t_export *export)
 
 void	unset_command(t_shell *shell, t_token *token)
 {
-	shell->temp_index = 1;
-	while (token->content[shell->temp_index])
-		shell->temp_index++;
-	if(shell->temp_index > 2)
+	t_export *export;
+	
+	export = ft_calloc(1,sizeof(t_export));
+	if(!export)
 		return ;
-	else
+	int i = 1;
+	while(token->content[i])
 	{
-		t_export *export;
-
-		export = ft_calloc(1,sizeof(t_export));
-		if(!export)
+		export->flag = 0;
+		export->variable = ft_strdup(token->content[i]);
+		scan_env(shell,export);
+		if(export->flag == 1)
+			delete_node(shell, export);
+		else if(export->flag == -1)
 			return ;
-		if(token->content[1])
-		{
-			while(token->content[1][export->index] && token->content[1][export->index] != '=')
-				export->index++;
-			export->variable = ft_substr(token->content[1],0,export->index);
-			export->content = ft_substr(token->content[1],export->index + 1,ft_strlen(token->content[1]) - export->index - 1);
-			scan_env(shell,export);
-			if(export->flag == 1)
-				delete_node(shell, export);
-			else if(export->flag == -1)
-				return ;
-		}
+		i++;
+        free(export->variable);
 	}
+    free(export);
 }

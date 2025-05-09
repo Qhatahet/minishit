@@ -6,7 +6,7 @@
 /*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 02:45:52 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/01 21:31:00 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/04/05 17:57:35 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,24 +16,20 @@ void	echo_arument(t_shell *shell, t_token *token)
 {
 	int	i;
 
-	shell->temp_index = 0;
 	shell->echo_flag = 0;
-	while (token->content[shell->temp_index])
+	if (token->type[shell->temp_index] == ARGUMENT)
 	{
-		if (token->type[shell->temp_index] == ARGUMENT)
+		i = 1;
+		while (token->content[shell->temp_index][i])
 		{
-			i = 1;
-			while (token->content[shell->temp_index][i])
+			if (token->content[shell->temp_index][i] != 'n')
 			{
-				if (token->content[shell->temp_index][i] != 'n')
-				{
-					token->type[shell->temp_index] = TEXT;
-					shell->echo_flag = 0;
-					break ;
-				}
-				i++;
-				shell->echo_flag = 1;
+				token->type[shell->temp_index] = TEXT;
+				shell->echo_flag = 0;
+				break ;
 			}
+			i++;
+			shell->echo_flag = 1;
 		}
 		shell->temp_index++;
 	}
@@ -41,15 +37,14 @@ void	echo_arument(t_shell *shell, t_token *token)
 
 void	echo_command(t_shell *shell, t_token *token)
 {
-	echo_arument(shell, token);
 	shell->temp_index = 1;
+	echo_arument(shell, token);
 	while (token->content[shell->temp_index])
 	{
-		if (token->type[shell->temp_index] != ARGUMENT)
+		if (token->content[shell->temp_index])
 		{
 			printf("%s", token->content[shell->temp_index]);
-			if (token->content[shell->temp_index + 1]
-				&& token->type[shell->temp_index + 1] != ARGUMENT)
+			if (token->content[shell->temp_index + 1])
 				printf(" ");
 		}
 		shell->temp_index++;

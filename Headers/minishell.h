@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/18 20:09:20 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/09 13:53:40 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,9 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/wait.h>
-#include <sys/types.h>
+# include <signal.h> 
+# include <sys/types.h>
+# include <dirent.h>
 
 typedef struct s_env
 {
@@ -27,6 +29,29 @@ typedef struct s_env
 	char				*content;
 	struct s_env		*next;
 }						t_env;
+
+typedef struct s_heredoc
+{
+	char	**heredocs;
+	char	**exit;
+}	t_heredoc;
+
+typedef struct s_fds
+{
+	int	fd_in[2];
+	int	fd_out[2];
+	// int	*pipe[2];
+	int	fd_heredoc;
+	int	saved_out;
+	int	saved_in;
+	int	flag_out;
+	int	flag_in;
+	int	flag_expand;
+	int	flag_heredoc;
+	char	**list;
+	char	*temp;
+}			t_fds;
+
 
 typedef struct s_export
 {
@@ -38,19 +63,15 @@ typedef struct s_export
 
 typedef struct s_parser
 {
-	int				append_counter;
-	int				commands_counter;
-	int				heredocs_counter;
-	int				redirect_counter;
-	int				filename_counter;
-	int				arguments_counter;
 	int				index;
 	int				filename_flag;
 	int				command_flag;
+	int				eof_flag;
 }					t_parser;
 
 typedef struct s_shell
 {
+	char			**cmd_list;
 	char			**paths;
 	char			*prompt;
 	char			**enviroment;
@@ -60,8 +81,10 @@ typedef struct s_shell
 	int				qoute_flag;
 	int				counter;
 	int				temp_index;
+	char			*variable;
 	int				echo_flag;
 	int				quote_counter;
+	int				expand_flag;
 	t_env			*env;
 }					t_shell;
 
@@ -74,7 +97,8 @@ typedef enum s_type
 	HEREDOC,
 	APPEND,
 	REDIRECTOUT,
-	REDIRECTIN
+	REDIRECTIN,
+	ENDOFFILE
 }					t_type;
 
 typedef struct s_token
@@ -88,12 +112,9 @@ typedef struct s_expand
 {
 	int				outer;
 	int				inner;
-	int				quotes_count;
-	int				quote_flag;
+	int				flag;
 	char			quote;
-	char			*output;
 	char			*variable;
-	int				var_length;
 	int				single_qoute;
 }					t_expand;
 
@@ -120,24 +141,21 @@ void				detect_arguments(t_parser *parser, t_token *temp);
 void				detect_command(t_parser *parser, t_token *temp,
 						char **paths);
 void				detect_redirect(t_parser *parser, t_token *temp);
-void				detect_filename(t_parser *parser, t_token *temp);
+int					detect_filename(t_parser *parser, t_token *temp);
 
 // expander
 void				ft_expander(t_shell *shell, t_token *token);
-void				count_quotes(t_token *token, t_expand *expand);
+int	count_quotes(t_token *token, t_expand *expand);
 void				expand_dollar(t_shell *shell, t_token *token,
 						t_expand *expand);
-void				check_env(t_shell *shell, t_expand *expand);
-void				copy_var(t_token *token, t_expand *expand);
-void				get_length(t_token *token, t_expand *expand);
-void				ft_outjoin(t_token *token, t_expand *expand);
+void	expand_dollar(t_shell *shell,t_token *token, t_expand *expand);
 void				check_cmd(t_token *token, t_expand *expand, char **paths);
 void				quote_remover(t_token *token, t_expand *expand);
 
 // env command
 void					env_copy(t_shell *shell, char **env);
-void					env_command(t_shell *shell);
 void					print_env(t_env *env);
+void					env_edit(t_shell *shell);
 t_env					*create_env_node(void);
 
 // echo command
@@ -148,17 +166,41 @@ void	ft_free_2d(char **a);
 void	sorted_print(t_env *env);
 void	export_command(t_shell *shell,t_token *token);
 void 	scan_env(t_shell *shell, t_export *export);
+int		env_count(t_env *env);
 
 // unset command
 void	unset_command(t_shell *shell, t_token *token);
 
-// testing
+// pwd and cd 
+void	ft_pwd();
+void	ft_cd(t_shell *shell, t_token *token);
+
+
+// signal
+void signal_handler(void);
+
+// execute
 void	execute(t_shell *shell, t_token *tokens, t_parser *parser);
 void	add_backslash(t_shell *shell);
 void	get_paths(t_shell *shell);
 void	free_tokenizer(t_token *tokens);
 void	free_env(t_env *env);
-void	ft_executor(t_shell *shell, t_token *token);
-
+int	ft_executor(t_shell *shell, t_token *token);
+void	open_heredoc(t_shell *shell, char **lst, t_fds *fds);
 void	skip_spaces(t_shell *shell);
+void exit_execution(t_shell *shell, t_token *tokens, t_parser *parser);
+void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser);
+char	**get_env(t_env *env);
+char	**create_list(t_token *tokens, t_fds *fd, t_shell *shell);
+int	how_many_pipes(t_token *tokens);
+char **rearrange_list(t_token *tokens);
+int	is_there_redirect(t_token *tokens);
+char	*expand_heredoc(char *text, t_shell *shell);
+char *remove_qoutes(char *string, t_shell *shell);
+int	is_there_command(t_token *tokens);
+char **rearrange_list(t_token *tokens);
+int	redirect_first_arg(t_token *tokens);
+char	**rearrange_list_redirect(t_token *tokens);
+int	count_content(t_token *tokens);
+
 #endif

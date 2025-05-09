@@ -3,64 +3,35 @@
 /*                                                        :::      ::::::::   */
 /*   expander_env.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:10:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/05 15:47:44 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/24 20:12:04 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	get_length(t_token *token, t_expand *expand)
-{
-	while ((ft_isalpha(token->content[expand->outer][expand->inner])
-		|| token->content[expand->outer][expand->inner] == '_')
-		&& token->content[expand->outer][expand->inner])
-	{
-		expand->var_length++;
-		expand->inner++;
-	}
-	expand->inner -= expand->var_length;
-	// printf("ls %d\n",expand->var_length);
-	// printf("ex %d\n",expand->inner);
-	expand->var_length++;
-}
 
-void	copy_var(t_token *token, t_expand *expand)
+void	check_cmd(t_token *token, t_expand *expand, char **paths)
 {
-	int	i;
+	char	*command_path;
+	int		i;
 
-	get_length(token, expand);
-	expand->variable = malloc(expand->var_length + 1);
-	if (!expand->variable)
-		return ;
+	command_path = NULL;
 	i = 0;
-	while (token->content[expand->outer][expand->inner]
-		&& (ft_isalpha(token->content[expand->outer][expand->inner])
-		|| token->content[expand->outer][expand->inner] == '_'))
+	while (paths[i])
 	{
-		expand->variable[i] = token->content[expand->outer][expand->inner];
-		i++;
-		expand->inner++;
-	}
-	expand->variable[i] = '\0';
-	expand->inner -= i;
-}
-
-void	check_env(t_shell *shell, t_expand *expand)
-{
-	t_env	*current;
-
-	current = shell->env;
-	while (current)
-	{
-		if (ft_strcmp(current->variable, expand->variable) == 0)
+		command_path = ft_strjoin(paths[i], token->content[expand->outer]);
+		if (!command_path)
+			exit(EXIT_FAILURE);
+		if (!access(command_path, X_OK))
 		{
-			expand->output = ft_strdup(current->content);
-			return ;
+			token->type[expand->outer] = COMMAND;
+			break ;
 		}
-		current = current->next;
+		i++;
 	}
-	expand->output = "\0";
+	if (command_path)
+		free(command_path);
 }

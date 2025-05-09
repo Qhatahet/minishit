@@ -6,7 +6,7 @@
 /*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/02 04:05:38 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/01/24 23:04:36 by qais             ###   ########.fr       */
+/*   Updated: 2025/04/24 22:00:16 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ char	*ft_strdup(const char *s)
 	int		len;
 	int		i;
 
+	if (!s)
+		return (NULL);
 	len = ft_strlen(s);
 	dup = malloc(sizeof(char) * (len + 1));
 	if (dup == NULL)

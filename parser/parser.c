@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:04:10 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/12 17:27:27 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/26 19:14:15 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	add_backslash(t_shell *shell)
 	i = 0;
 	j = 0;
 	temp = NULL;
-	while (shell->paths[i])
+	while (shell->paths && shell->paths[i])
 	{
 		l = ft_strlen(shell->paths[i]);
 		temp = malloc(l + 2);
@@ -46,6 +46,8 @@ void	get_paths(t_shell *shell)
 {
 	t_env	*current;
 
+	if (shell->env == NULL)
+		return;
 	current = shell->env;
 	while (current)
 	{
@@ -70,17 +72,25 @@ void	ft_parser(t_token *head, t_parser *parser, t_shell *shell)
 		while (head->content[parser->index])
 		{
 			parser->filename_flag = 0;
-			if (!parser->command_flag)
+			parser->eof_flag = 0;
+			if (shell->paths && !parser->command_flag)
 				detect_command(parser, head, shell->paths);
 			detect_arguments(parser, head);
 			detect_redirect(parser, head);
 			detect_heredoc(parser, head);
 			parser->index++;
-			if (parser->filename_flag)
-				detect_filename(parser, head);
+			if (parser->filename_flag || parser->eof_flag)
+			{
+				if (detect_filename(parser, head))
+					parser->index++;
+			}
 		}
 		parser->index = 0;
 		head = head->next;
 	}
-	ft_free_2d(shell->paths);
+	if (shell->paths)
+	{
+		ft_free_2d(shell->paths);
+		shell->paths = NULL;
+	}
 }

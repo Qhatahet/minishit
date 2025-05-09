@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:16:39 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/12 17:27:39 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/04/26 19:14:48 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ int	check_built_ins(t_parser *parser, t_token *temp)
 	if (i == 1)
 	{
 		temp->type[parser->index] = COMMAND;
-		parser->commands_counter++;
 		parser->command_flag = 1;
 		return (1);
 	}
@@ -55,7 +54,6 @@ void	detect_command(t_parser *parser, t_token *temp, char **paths)
 		if (!access(command_path, X_OK))
 		{
 			temp->type[parser->index] = COMMAND;
-			parser->commands_counter++;
 			parser->command_flag = 1;
 			if (command_path)
 				free(command_path);
@@ -72,7 +70,6 @@ void	detect_arguments(t_parser *parser, t_token *temp)
 		&& ft_isalpha(temp->content[parser->index][1]))
 	{
 		temp->type[parser->index] = ARGUMENT;
-		parser->arguments_counter++;
 	}
 }
 
@@ -81,13 +78,11 @@ void	detect_heredoc(t_parser *parser, t_token *temp)
 	if (ft_strncmp(temp->content[parser->index], "<<", 2) == 0)
 	{
 		temp->type[parser->index] = HEREDOC;
-		parser->heredocs_counter++;
-		parser->filename_flag = 1;
+		parser->eof_flag = 1;
 	}
 	else if (ft_strncmp(temp->content[parser->index], ">>", 2) == 0)
 	{
 		temp->type[parser->index] = APPEND;
-		parser->append_counter++;
 		parser->filename_flag = 1;
 	}
 }
@@ -97,20 +92,26 @@ void	detect_redirect(t_parser *parser, t_token *temp)
 	if (*temp->content[parser->index] == '>')
 	{
 		temp->type[parser->index] = REDIRECTOUT;
-		parser->redirect_counter++;
 		parser->filename_flag = 1;
 	}
 	else if (*temp->content[parser->index] == '<')
 	{
 		temp->type[parser->index] = REDIRECTIN;
-		parser->redirect_counter++;
 		parser->filename_flag = 1;
 	}
 }
 
-void	detect_filename(t_parser *parser, t_token *temp)
+int	detect_filename(t_parser *parser, t_token *temp)
 {
-	temp->type[parser->index] = FILENAME;
-	parser->filename_counter++;
-	parser->index++;
+	if (parser->eof_flag && temp->content[parser->index])
+	{
+		temp->type[parser->index] = ENDOFFILE;
+		return (1);
+	}
+	else if (parser->filename_flag && temp->content[parser->index])
+	{
+		temp->type[parser->index] = FILENAME;
+		return (1);
+	}
+	return (0);
 }

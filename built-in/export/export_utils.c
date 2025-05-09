@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 18:33:53 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/01 21:35:54 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/04/30 02:11:47 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 void	ft_free_2d(char **a)
 {
+
 	int	i;
 
 	if (a == NULL)
@@ -29,7 +30,7 @@ void	ft_free_2d(char **a)
 	free(a);
 }
 
-static int	env_count(t_env *env)
+int	env_count(t_env *env)
 {
     int		count = 0;
     t_env	*current = env;
@@ -44,23 +45,27 @@ static int	env_count(t_env *env)
 
 static char	**copy_env_to_array(t_env *env)
 {
-    int		i = 0;
-    int		count = env_count(env);
-    char	**env_array = malloc((count + 1) * sizeof(char *));
-    t_env	*current = env;
+	int		i;
+	char	**env_array;
+	char	*tmp;
+	t_env	*current;
 
-    if (!env_array)
-        return (NULL);
-    while (current)
-    {
-        if (current->variable)
-        {
-            if (current->content)
-                env_array[i] = ft_strjoin(current->variable, ft_strjoin("=", current->content));
-            else
-                env_array[i] = ft_strjoin(current->variable, "=");
-            i++;
-        }
+	i = 0;
+	current = env;
+	env_array = malloc((env_count(env) + 1) * sizeof(char *));
+	if (!env_array)
+		return (NULL);
+	while (current)
+	{
+		if (current->variable && current->content)
+		{
+			tmp = ft_strjoin(current->variable, "=");
+			env_array[i] = ft_strjoin(tmp, current->content);
+			free(tmp);
+		}
+		else
+			env_array[i] = ft_strjoin(current->variable, "=");
+		i++;
         current = current->next;
     }
     env_array[i] = NULL;
@@ -99,12 +104,14 @@ void	sorted_print(t_env *env)
 
     env_array = copy_env_to_array(env);
     if (!env_array)
-        return ;
+	{
+		return ;
+	}
     env_array = sort_env(env_array);
     i = 0;
     while (env_array[i])
     {
-        printf("declare -x %s\n", env_array[i]);
+        printf("declare -x %s\"\n", env_array[i]);
         i++;
     }
     ft_free_2d(env_array);
