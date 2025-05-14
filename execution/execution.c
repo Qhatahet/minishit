@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/09 14:34:04 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:52:58 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,22 @@ int	is_there_command(t_token *tokens)
 	while (temp->content[i])
 	{
 		if (temp->type[i] == COMMAND)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+int	is_there_heredoc(t_token *tokens)
+{
+	t_token	*temp;
+	int			i;
+
+	temp = tokens;
+	i = 0;
+	while (temp->content[i])
+	{
+		if (temp->type[i] == HEREDOC)
 			return (1);
 		i++;
 	}
@@ -407,7 +423,8 @@ char	**create_list(t_token *tokens, t_fds *fd, t_shell *shell)
 		}
 		return (redirect_lst);
 	}
-	return (lst);
+	else
+		return (lst);
 }
 
 void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
@@ -418,9 +435,9 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 	int		j;
 
 	fd = ft_calloc(1, sizeof(t_fds));
+	fd->temp = NULL;
 	if (!fd)
 		return ;
-	fd->temp = ft_strdup("");
 	shell->cmd_list = create_list(tokens, fd, shell);
 	if (!shell->cmd_list)
 		return ;
@@ -456,8 +473,8 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 			free(temp);
 			write(2, string, ft_strlen(string));
 			free(string);
-			exit_execution(shell,tokens,parser);
 			free(fd);
+			exit_execution(shell,tokens,parser);
 		}
 		if (!shell->enviroment)
 			shell->enviroment = get_env(shell->env);
@@ -490,24 +507,17 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 				free(temp);
 				write(2, string, ft_strlen(string));
 				free(string);
-				exit_execution(shell,tokens,parser);
 				free(fd);
-				exit(EXIT_FAILURE);
+				exit_execution(shell,tokens,parser);
 			}
 		}
 		else
 		{
-			exit_execution(shell,tokens,parser);
 			free(fd);
-			exit(0);
+			exit_execution(shell,tokens,parser);
 		}
 		execve(cmd, shell->cmd_list, shell->enviroment);
 	}
-	// else if (id != 0)
-	// {
-	// 	signal(SIGINT, SIG_IGN);
-	// 	signal(SIGQUIT, SIG_IGN);
-	// }
 	wait(NULL);
 	if (fd->flag_out)
 	{

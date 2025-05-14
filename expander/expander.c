@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:06:40 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/26 18:30:55 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 01:58:43 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,11 @@ static void	process_token(t_shell *shell, t_token *token, t_expand *expand)
 			quote_remover(token, expand);
 		expand->outer++;
 	}
+	if (expand->variable)
+	{
+		free(expand->variable);
+		expand->variable = NULL;
+	}
 }
 
 void	ft_expander(t_shell *shell, t_token *token)
@@ -40,6 +45,7 @@ void	ft_expander(t_shell *shell, t_token *token)
 		process_token(shell, token, expand);
 		token = token->next;
 	}
-	free(expand->variable);
+	if (expand->variable)
+		free(expand->variable);
 	free(expand);
 }

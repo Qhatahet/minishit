@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/09 14:28:25 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 18:36:46 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,9 +131,12 @@ void	free_env(t_env *env)
 void	free_tokenizer(t_token *tokens)
 {
 	t_token	*temp;
-
+	int	i = 0;
+	
 	while (tokens)
 	{
+		fprintf(stderr, "TEST = %i\n", i);
+		i++;
 		temp = tokens->next;
 		if (tokens->content)
 			ft_free_2d(tokens->content);
@@ -143,6 +146,7 @@ void	free_tokenizer(t_token *tokens)
 		tokens = temp;
 	}
 	free(tokens);
+	tokens = NULL;
 }
 
 void	init_minishell(t_shell *shell)

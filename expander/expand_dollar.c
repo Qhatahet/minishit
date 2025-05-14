@@ -14,15 +14,18 @@
 
 static void	handle_dollar(t_shell *shell, t_token *token, t_expand *expand, char *temp, int *i)
 {
-	t_env *current;
+	t_env	*current;
+	char	*digit;
+	int		index;
+	int		count;
 
-	int count = 0;
+	count = 0;
 	expand->inner++;
 	if(token->content[expand->outer][expand->inner] == ' ' || token->content[expand->outer][expand->inner] == '\0')
 		temp[(*i)++] = '$';
 	if(ft_isdigit(token->content[expand->outer][expand->inner]) && token->content[expand->outer][expand->inner] == '0')
 	{
-		char *digit = ft_strdup("ARSSH");
+		digit = ft_strdup("ARSSH");
 		expand->inner++;
 		while(digit[count])
 			temp[(*i)++] = digit[count++];
@@ -32,7 +35,7 @@ static void	handle_dollar(t_shell *shell, t_token *token, t_expand *expand, char
 		expand->inner++;
 	else
 	{
-		while(token->content[expand->outer][expand->inner] && (ft_isalpha(token->content[expand->outer][expand->inner]) || token->content[expand->outer][expand->inner] == '_'))
+		while(token->content[expand->outer][expand->inner] && (ft_isalnum(token->content[expand->outer][expand->inner]) || token->content[expand->outer][expand->inner] == '_'))
 		{
 			expand->inner++;
 			count++;
@@ -44,13 +47,18 @@ static void	handle_dollar(t_shell *shell, t_token *token, t_expand *expand, char
 		{
 			if (ft_strcmp(current->variable, expand->variable) == 0)
 			{
-				int index = 0;
+				index = 0;
 				while(current->content[index])
 					temp[(*i)++] = current->content[index++];
 				return ;
 			}
 			current = current->next;
 		}
+		free(expand->variable);
+		expand->variable = NULL;
+	}
+	if (expand->variable)
+	{
 		free(expand->variable);
 		expand->variable = NULL;
 	}
@@ -156,7 +164,7 @@ void	expand_dollar(t_shell *shell,t_token *token, t_expand *expand)
 	x = count_length(shell,token,expand);
 	if((int)ft_strlen(token->content[expand->outer]) == x)
 		return ;
-	temp = malloc(x + 1);
+	temp = malloc(x + 2);
 	if(!temp)
 		exit(130);
 	i = 0;
@@ -168,7 +176,14 @@ void	expand_dollar(t_shell *shell,t_token *token, t_expand *expand)
 			while(token->content[expand->outer][expand->inner] && token->content[expand->outer][expand->inner] != '\"')
 			{
 				if(token->content[expand->outer][expand->inner] == '$')
+				{
 					handle_dollar(shell,token,expand,temp,&i);
+					if (expand->variable)
+					{
+						free(expand->variable);
+						expand->variable = NULL;
+					}
+				}	
 				else
 					temp[i++] = token->content[expand->outer][expand->inner++];
 			}
@@ -181,7 +196,14 @@ void	expand_dollar(t_shell *shell,t_token *token, t_expand *expand)
 			temp[i++] = token->content[expand->outer][expand->inner++];
 		}
 		else if(token->content[expand->outer][expand->inner] == '$')
+		{
 			handle_dollar(shell,token,expand,temp,&i);
+			if (expand->variable)
+			{
+				free(expand->variable);
+				expand->variable = NULL;
+			}
+		}
 		else
 			temp[i++] = token->content[expand->outer][expand->inner++];
 	}

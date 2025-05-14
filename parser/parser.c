@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:04:10 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/26 19:14:15 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 00:50:14 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void	get_paths(t_shell *shell)
 	t_env	*current;
 
 	if (shell->env == NULL)
-		return;
+		return ;
 	current = shell->env;
 	while (current)
 	{

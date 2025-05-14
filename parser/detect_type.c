@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   detect_type.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:16:39 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/26 19:14:48 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 00:45:30 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,20 @@
 
 int	check_built_ins(t_parser *parser, t_token *temp)
 {
-	int	i;
+	int	flag;
 
-	i = 0;
+	flag = 0;
 	if (!ft_strcmp(temp->content[parser->index], "cd"))
-		i = 1;
+		flag = 1;
 	else if (!ft_strcmp(temp->content[parser->index], "export"))
-		i = 1;
+		flag = 1;
 	else if (!ft_strcmp(temp->content[parser->index], "unset"))
-		i = 1;
+		flag = 1;
 	else if (!ft_strcmp(temp->content[parser->index], "exit"))
-		i = 1;
+		flag = 1;
 	else
-		i = 0;
-	if (i == 1)
+		flag = 0;
+	if (flag == 1)
 	{
 		temp->type[parser->index] = COMMAND;
 		parser->command_flag = 1;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/09 13:53:40 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/11 19:31:10 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ typedef struct s_fds
 {
 	int	fd_in[2];
 	int	fd_out[2];
-	// int	*pipe[2];
 	int	fd_heredoc;
 	int	saved_out;
 	int	saved_in;
@@ -201,6 +200,6 @@ int	is_there_command(t_token *tokens);
 char **rearrange_list(t_token *tokens);
 int	redirect_first_arg(t_token *tokens);
 char	**rearrange_list_redirect(t_token *tokens);
-int	count_content(t_token *tokens);
+int	is_there_heredoc(t_token *tokens);
 
 #endif
