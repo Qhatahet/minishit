@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 21:28:32 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/15 18:58:29 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,5 +202,6 @@ char **rearrange_list(t_token *tokens);
 int	redirect_first_arg(t_token *tokens);
 char	**rearrange_list_redirect(t_token *tokens);
 int	is_there_heredoc(t_token *tokens);
+int	create_heredoc_files(t_token *tokens);
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Handler.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:23:53 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 22:38:16 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/15 19:03:50 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,8 @@ char	**list_redirect(t_token *tokens)
 	}
     if(is_there_command(temp) && is_there_heredoc(temp))
     {
-        lst[j++] = ft_strdup(".tmp");
+		if(temp->heredoc_file)
+        	lst[j++] = ft_strdup(temp->heredoc_file);
     }
 	lst[j] = NULL;
 	return (lst);
@@ -117,7 +118,8 @@ char **copy_command_line(t_token *tokens)
 	}
     if(is_there_command(temp) && is_there_heredoc(temp))
     {
-        list[j++] = ft_strdup(".tmp");
+		if(temp->heredoc_file)
+        	list[j++] = ft_strdup(temp->heredoc_file);
     }
 	list[j] = NULL;
 	return (list);
@@ -131,10 +133,10 @@ char **list(t_token *tokens)
 		list = list_redirect(tokens);
 	else
 		list = copy_command_line(tokens);
-    for(int i = 0;list[i] ; i++)
-    {   
-        fprintf(stderr,"%d:%s\n",i,list[i]);
-    }   
+    // for(int i = 0;list[i] ; i++)
+    // {   
+    //     fprintf(stderr,"%d:%s\n",i,list[i]);
+    // }   
 	return (list);
 }
 
@@ -153,12 +155,12 @@ int     count_heredoc(t_token *tokens)
     return(counter);
 }
 
-int    open_heredocs(t_shell *shell,char *exit)
+int    open_heredocs(t_shell *shell,char *exit, char *file)
 {
     char *text = NULL;
     if (exit[0] == '\'' || exit[0] == '\"')
         exit = remove_qoutes(exit,shell);
-    int fd = open(".tmp", O_CREAT | O_RDWR | O_TRUNC, 0644);
+    int fd = open(file, O_CREAT | O_RDWR | O_TRUNC, 0644);
     while (1)
     {
         text = readline(">");
@@ -183,6 +185,7 @@ void    heredoc_handle(t_token *tokens , t_shell *shell)
     t_token *temp = tokens;
     int i = 0;
     int fd = 0;
+	// create_heredoc_files(tokens);
     while(temp->content[i])
     {
         if(temp->type[i] == HEREDOC)
@@ -190,7 +193,7 @@ void    heredoc_handle(t_token *tokens , t_shell *shell)
             char *exit = ft_strdup(temp->content[i+1]);
             if(fd)
                 close(fd);
-            fd = open_heredocs(shell, exit);
+            fd = open_heredocs(shell, exit, temp->heredoc_file);
         }
         i++;
     }
@@ -226,7 +229,7 @@ int is_there_redirectout(t_token *tokens)
     return (0);
 }
 
-int	open_heredoc_files(t_token *tokens)
+int	create_heredoc_files(t_token *tokens)
 {
 	t_token	*temp;
 	int		i;
@@ -242,7 +245,8 @@ int	open_heredoc_files(t_token *tokens)
 		{
 			if (temp->type[i] == HEREDOC)
 			{
-				temp->heredoc_file = ft_strjoin("/tmp/.temp", ft_itoa(count));
+				temp->heredoc_file = ft_strjoin(".temp", ft_itoa(count));
+				fprintf(stderr, "heredoc_file = %s\n", temp->heredoc_file);
 				count++;
 				break ;
 			}
@@ -253,24 +257,24 @@ int	open_heredoc_files(t_token *tokens)
 	return (count);
 }
 
-void	handle_heredoc_in_pipes(t_shell *shell, t_token *tokens)
-{
-	// int		files;
-	// int		i;
-	t_token	*temp;
-	temp = tokens;
-	// files =
-	(void)shell; 
-	open_heredoc_files(tokens);
-	while (temp)
-	{
-		printf("heredoc_file = %s", temp->heredoc_file);
-		printf("\n");
-		temp = temp->next;
-	}
-	exit(1);
-	// i = 0;
-}
+// void	handle_heredoc_in_pipes(t_shell *shell, t_token *tokens)
+// {
+// 	// int		files;
+// 	// int		i;
+// 	t_token	*temp;
+// 	temp = tokens;
+// 	// files =
+// 	(void)shell; 
+// 	// open_heredoc_files(tokens);
+// 	while (temp)
+// 	{
+// 		printf("heredoc_file = %s", temp->heredoc_file);
+// 		printf("\n");
+// 		temp = temp->next;
+// 	}
+// 	exit(1);
+// 	// i = 0;
+// }
 
 void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
 {
@@ -280,6 +284,7 @@ void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
     int pids[pipes_count + 1];               // Number of commands = pipes_count + 1
     int pipes[pipes_count][2];               // Number of pipes = pipes_count
     int i = 0;
+	t_token	*temp;
 
     // Create pipes
     while (i < pipes_count) 
@@ -293,10 +298,12 @@ void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
     }
     i = 0;
     // Create child processes for each command
-	handle_heredoc_in_pipes(shell, tokens);
+	// handle_heredoc_in_pipes(shell, tokens);
+	create_heredoc_files(tokens);
     while (i < pipes_count + 1) 
     {
-        // heredoc_handle(tokens, shell);
+		temp = tokens;
+		heredoc_handle(tokens, shell);
         pids[i] = fork();
         if (pids[i] == -1) 
         {
@@ -306,6 +313,7 @@ void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
         if (pids[i] == 0) 
         {
             j = 0;
+			// temp = tokens;
             while (j < pipes_count)
 			{
                 if (i != j + 1)
@@ -319,7 +327,7 @@ void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                 j++;
             }
             // Redirect input/output for the current command
-            if (i == 0) 
+            if (i == 0)
             {
                 if(is_there_redirect(tokens))
                 {
@@ -620,7 +628,5 @@ void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
         wait(NULL);
         i++;
     }
-    if(!access(".tmp",W_OK | R_OK))
-        unlink(".tmp");
     return;
 }
