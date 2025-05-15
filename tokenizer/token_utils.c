@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   token_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:03:27 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/12 18:43:05 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 21:29:22 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ t_token	*create_new_node(t_shell *shell)
 	shell->temp_index = shell->prompt_index;
 	tokenizer_size(shell);
 	new_node->type = ft_calloc(shell->counter + 1, sizeof(t_type));
+	new_node->heredoc_file = NULL;
 	if (!new_node->type)
 		exit(EXIT_FAILURE);
 	new_node->content = ft_calloc(shell->counter + 1, sizeof(char *));

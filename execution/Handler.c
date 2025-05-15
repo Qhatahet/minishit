@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Handler.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:23:53 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 18:43:17 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/14 22:38:16 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void exit_execution(t_shell *shell, t_token *tokens, t_parser *parser)
 	free(parser);
 	exit(EXIT_FAILURE);
 }
+
 int counter(t_token *tokens)
 {
     t_token *tmp = tokens;
@@ -125,7 +126,7 @@ char **copy_command_line(t_token *tokens)
 char **list(t_token *tokens)
 {
     char	**list;
-    
+
     if (redirect_first_arg(tokens))
 		list = list_redirect(tokens);
 	else
@@ -225,7 +226,53 @@ int is_there_redirectout(t_token *tokens)
     return (0);
 }
 
-void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
+int	open_heredoc_files(t_token *tokens)
+{
+	t_token	*temp;
+	int		i;
+	int		count;
+
+	temp = tokens;
+	i = 0;
+	count = 1;
+	while (temp)
+	{
+		i = 0;
+		while (temp->content[i])
+		{
+			if (temp->type[i] == HEREDOC)
+			{
+				temp->heredoc_file = ft_strjoin("/tmp/.temp", ft_itoa(count));
+				count++;
+				break ;
+			}
+			i++;
+		}
+		temp = temp->next;
+	}
+	return (count);
+}
+
+void	handle_heredoc_in_pipes(t_shell *shell, t_token *tokens)
+{
+	// int		files;
+	// int		i;
+	t_token	*temp;
+	temp = tokens;
+	// files =
+	(void)shell; 
+	open_heredoc_files(tokens);
+	while (temp)
+	{
+		printf("heredoc_file = %s", temp->heredoc_file);
+		printf("\n");
+		temp = temp->next;
+	}
+	exit(1);
+	// i = 0;
+}
+
+void	execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
 {
     char *cmd;
     int j = 0;
@@ -246,9 +293,10 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
     }
     i = 0;
     // Create child processes for each command
+	handle_heredoc_in_pipes(shell, tokens);
     while (i < pipes_count + 1) 
     {
-        heredoc_handle(tokens,shell);
+        // heredoc_handle(tokens, shell);
         pids[i] = fork();
         if (pids[i] == -1) 
         {
@@ -257,59 +305,6 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
         }
         if (pids[i] == 0) 
         {
-            // Child process
-            // shell->cmd_list = list(tokens);
-            // get_paths(shell);
-            // if (!shell->paths)
-            // {
-            //     char *temp = ft_strjoin("command not found: ",shell->cmd_list[0]);
-            //     char *string = ft_strjoin(temp,"\n");
-            //     free(temp);
-            //     write(2, string, ft_strlen(string));
-            //     free(string);
-            //     exit_execution(shell, tokens, parser);
-            // }
-            // if (!shell->enviroment)
-            //     shell->enviroment = get_env(shell->env);
-            // if (shell->cmd_list[0] && (shell->cmd_list[0][0] == '.' || shell->cmd_list[0][0] == '/')) 
-            // {
-            //     if (!access(shell->cmd_list[0], X_OK))
-            //         cmd = ft_strdup(shell->cmd_list[0]);
-            // } 
-            // else if (shell->cmd_list[0]) 
-            // {
-            //     j = 0;
-            //     while (shell->paths && shell->paths[j]) 
-            //     {
-            //         cmd = ft_strjoin(shell->paths[j], shell->cmd_list[0]);
-            //         if (!cmd)
-            //             exit(EXIT_FAILURE);
-            //         if (!access(cmd, X_OK)) 
-            //             break;
-            //         free(cmd);
-            //         cmd = NULL;
-            //         j++;
-            //     }
-            //     if (shell->paths)
-            //         ft_free_2d(shell->paths);
-            //     if (!cmd)
-			// 	{
-            //         char *temp = ft_strjoin("command not found: ",shell->cmd_list[0]);
-            //         char *string = ft_strjoin(temp,"\n");
-            //         free(temp);
-            //         write(2, string, ft_strlen(string));
-            //         free(string);
-			// 		j = 0;
-			// 		while (j < pipes_count)
-			// 		{
-			// 			close(pipes[j][0]);
-			// 			close(pipes[j][1]);
-			// 			j++;
-			// 		}
-            //         exit_execution(shell, tokens, parser);
-            //     }
-            // }
-            // Close unused pipe ends in the child process
             j = 0;
             while (j < pipes_count)
 			{
