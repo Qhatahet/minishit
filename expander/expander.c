@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:06:40 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 01:58:43 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/14 23:37:58 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 static void	process_token(t_shell *shell, t_token *token, t_expand *expand)
 {
+	if (!token || !token->content)
+        return;
 	while (token->content[expand->outer])
 	{
 		expand->inner = 0;
@@ -39,6 +41,8 @@ void	ft_expander(t_shell *shell, t_token *token)
 	expand = ft_calloc(1, sizeof(t_expand));
 	if (!expand)
 		return ;
+	if (!token)
+        return;
 	while (token)
 	{
 		expand->outer = 0;

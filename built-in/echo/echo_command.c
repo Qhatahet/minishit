@@ -6,7 +6,7 @@
 /*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 02:45:52 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/05 17:57:35 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/05/14 19:23:33 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ void	echo_arument(t_shell *shell, t_token *token)
 	if (token->type[shell->temp_index] == ARGUMENT)
 	{
 		i = 1;
-		while (token->content[shell->temp_index][i])
+		while (shell->cmd_list[shell->temp_index][i])
 		{
-			if (token->content[shell->temp_index][i] != 'n')
+			if (shell->cmd_list[shell->temp_index][i] != 'n')
 			{
 				token->type[shell->temp_index] = TEXT;
 				shell->echo_flag = 0;
@@ -39,16 +39,16 @@ void	echo_command(t_shell *shell, t_token *token)
 {
 	shell->temp_index = 1;
 	echo_arument(shell, token);
-	while (token->content[shell->temp_index])
+	while (shell->cmd_list[shell->temp_index])
 	{
-		if (token->content[shell->temp_index])
+		if (shell->cmd_list[shell->temp_index])
 		{
-			printf("%s", token->content[shell->temp_index]);
-			if (token->content[shell->temp_index + 1])
-				printf(" ");
+			write(shell->fd_out,shell->cmd_list[shell->temp_index],ft_strlen(shell->cmd_list[shell->temp_index]));
+			if (shell->cmd_list[shell->temp_index + 1])
+				write(shell->fd_out," ",1);
 		}
 		shell->temp_index++;
 	}
 	if (shell->echo_flag != 1)
-		printf("\n");
+		write(shell->fd_out,"\n",1);
 }

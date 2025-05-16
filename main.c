@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 18:36:46 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/16 18:05:17 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,14 +70,14 @@ void	print_tokens(t_token *arg)
 
 int	ft_executor(t_shell *shell, t_token *token)
 {
-	while (token)
-	{
+	// while (token)
+	// {
 		if (token->content && token->content[0])
 		{
 			if (ft_strcmp(token->content[0], "env") == 0
 				&& token->content[1] == NULL)
 			{
-				print_env(shell->env);
+				print_env(shell,shell->env);
 				return (1);
 			}
 			else if (ft_strcmp(token->content[0], "echo") == 0)
@@ -105,48 +105,15 @@ int	ft_executor(t_shell *shell, t_token *token)
 				ft_cd(shell, token);
 				return (1);
 			}
+			else if (ft_strcmp(token->content[0], "exit") == 0)
+			{
+				ft_exit(token,shell);
+				return (1);
+			}
 		}
-		token = token->next;
-	}
+		// token = token->next;
+	// }
 	return (0);
-}
-
-void	free_env(t_env *env)
-{
-	t_env	*tmp;
-
-	while (env)
-	{
-		tmp = env->next;
-		if (env->variable)
-			free(env->variable);
-		if (env->content)
-			free(env->content);
-		free(env);
-		env = tmp;
-	}
-	free(env);
-}
-
-void	free_tokenizer(t_token *tokens)
-{
-	t_token	*temp;
-	int	i = 0;
-	
-	while (tokens)
-	{
-		fprintf(stderr, "TEST = %i\n", i);
-		i++;
-		temp = tokens->next;
-		if (tokens->content)
-			ft_free_2d(tokens->content);
-		if (tokens->type)
-			free(tokens->type);
-		free(tokens);
-		tokens = temp;
-	}
-	free(tokens);
-	tokens = NULL;
 }
 
 void	init_minishell(t_shell *shell)
@@ -186,7 +153,7 @@ void	init_minishell(t_shell *shell)
 			}
 			// print_tokens(tokens);
 			// ft_executor(shell, tokens);
-			if (tokens && !ft_executor(shell, tokens))
+			if (tokens)
 				execute(shell, tokens, parser);
 			if (shell->prompt)
 				free(shell->prompt);

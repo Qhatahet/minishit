@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander_quotes.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 05:58:19 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 01:21:45 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/14 23:42:02 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ void	quote_remover(t_token *token, t_expand *expand)
 	int		i;
 	int count;
 
+	if (!token || !token->content)
+        return;
 	int x = count_quotes(token, expand);
 	if(x == 0)
 		return;
@@ -70,42 +72,45 @@ void	quote_remover(t_token *token, t_expand *expand)
 }
 
 // count quotes to be removed 
-int	count_quotes(t_token *token, t_expand *expand)
+int count_quotes(t_token *token, t_expand *expand)
 {
-	int count;
-	
-	count = 0;
-	expand->inner = 0;
-	while(token->content[expand->outer][expand->inner])
-	{
-		if(token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
-		{
-			expand->quote = token->content[expand->outer][expand->inner];
-			count++;
-			expand->inner++;
-			break ;
-		}
-		expand->inner++;
-	}
-	while (token->content[expand->outer][expand->inner])
-	{
-		if(count % 2 == 0)
-		{
-			while(token->content[expand->outer][expand->inner])
-			{
-				if(token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
-				{
-					expand->quote = token->content[expand->outer][expand->inner];
-					count++;
-					expand->inner++;
-					break ;
-				}
-				expand->inner++;
-			}
-		}
-		if (token->content[expand->outer][expand->inner] == expand->quote)
-			count++;
-		expand->inner++;
-	}
-	return(count);
+    int count;
+
+    count = 0;
+    expand->inner = 0;
+    expand->quote = '\0';
+    if (!token->content || !token->content[expand->outer])
+        return (0);
+    while (token->content[expand->outer][expand->inner])
+    {
+        if (token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
+        {
+            expand->quote = token->content[expand->outer][expand->inner];
+            count++;
+            expand->inner++;
+            break;
+        }
+        expand->inner++;
+    }
+    while (token->content[expand->outer][expand->inner])
+    {
+        if (count % 2 == 0)
+        {
+            while (token->content[expand->outer][expand->inner])
+            {
+                if (token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
+                {
+                    expand->quote = token->content[expand->outer][expand->inner];
+                    count++;
+                    expand->inner++;
+                    break;
+                }
+                expand->inner++;
+            }
+        }
+        if (token->content[expand->outer][expand->inner] == expand->quote)
+            count++;
+        expand->inner++;
+    }
+    return (count);
 }

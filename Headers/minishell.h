@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/15 18:58:29 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/15 19:42:20 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 # include <signal.h> 
 # include <sys/types.h>
 # include <dirent.h>
+
+extern int g_exit_status;
 
 typedef struct s_env
 {
@@ -84,6 +86,7 @@ typedef struct s_shell
 	int				echo_flag;
 	int				quote_counter;
 	int				expand_flag;
+	int				fd_out;
 	t_env			*env;
 }					t_shell;
 
@@ -154,7 +157,7 @@ void				quote_remover(t_token *token, t_expand *expand);
 
 // env command
 void					env_copy(t_shell *shell, char **env);
-void					print_env(t_env *env);
+void	print_env(t_shell *shell ,t_env *env);
 void					env_edit(t_shell *shell);
 t_env					*create_env_node(void);
 
@@ -176,8 +179,10 @@ void	ft_pwd();
 void	ft_cd(t_shell *shell, t_token *token);
 
 
-// signal
+// signal and exit status
 void signal_handler(void);
+void    ft_exit(t_token *token , t_shell *shell);
+
 
 // execute
 void	execute(t_shell *shell, t_token *tokens, t_parser *parser);
