@@ -6,111 +6,131 @@
 /*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 05:58:19 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 23:42:02 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/05/17 00:46:07 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	quote_remover(t_token *token, t_expand *expand)
+static void	quote_norm(t_token *token, t_expand *expand, char *temp, int *count)
 {
-	char	*temp;
-	int		i;
-	int count;
-
-	if (!token || !token->content)
-        return;
-	int x = count_quotes(token, expand);
-	if(x == 0)
-		return;
-	temp = malloc(ft_strlen(token->content[expand->outer]) - x + 1);
-	if(!temp)
-		exit(123);
-	expand->inner = 0;
-	i = 0;
-	count = 0;
-	expand->quote = '\0';
-	while(token->content[expand->outer][expand->inner])
+	while (token->content[expand->out][expand->in])
 	{
-		if(token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
+		if (*count % 2 == 0)
 		{
-			expand->quote = token->content[expand->outer][expand->inner];
+			while (token->content[expand->out][expand->in])
+			{
+				if (token->content[expand->out][expand->in] == '\''
+					|| token->content[expand->out][expand->in] == '\"')
+				{
+					expand->quote = token->content[expand->out][expand->in];
+					(*count)++;
+					expand->in++;
+					break ;
+				}
+				temp[expand->dex++] = token->content[expand->out][expand->in++];
+			}
+		}
+		if (token->content[expand->out][expand->in] == expand->quote)
+		{
+			(*count)++;
+			expand->in++;
+		}
+		else
+			temp[expand->dex++] = token->content[expand->out][expand->in++];
+	}
+}
+
+static void	process_quotes(t_token *token, t_expand *expand, char *temp)
+{
+	int	count;
+
+	expand->dex = 0;
+	count = 0;
+	expand->in = 0;
+	expand->quote = '\0';
+	while (token->content[expand->out][expand->in])
+	{
+		if (token->content[expand->out][expand->in] == '\''
+			|| token->content[expand->out][expand->in] == '\"')
+		{
+			expand->quote = token->content[expand->out][expand->in];
 			count++;
-			expand->inner++;
+			expand->in++;
 			break ;
 		}
 		else
-			temp[i++] = token->content[expand->outer][expand->inner++];
+			temp[expand->dex++] = token->content[expand->out][expand->in++];
 	}
-	while (token->content[expand->outer][expand->inner])
-	{
-		if(count % 2 == 0)
-		{
-			while(token->content[expand->outer][expand->inner])
-			{
-				if(token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
-				{
-					expand->quote = token->content[expand->outer][expand->inner];
-					count++;
-					expand->inner++;
-					break ;
-				}
-				temp[i++] = token->content[expand->outer][expand->inner++];
-			}
-		}
-		if (token->content[expand->outer][expand->inner] == expand->quote)
-		{
-			count++;
-			expand->inner++;
-		}
-		else
-			temp[i++] = token->content[expand->outer][expand->inner++];
-	}
-	temp[i] = '\0';
-	free(token->content[expand->outer]);
-	token->content[expand->outer] = temp;
+	quote_norm(token, expand, temp, &count);
+	temp[expand->dex] = '\0';
 }
 
-// count quotes to be removed 
-int count_quotes(t_token *token, t_expand *expand)
+void	quote_remover(t_token *token, t_expand *expand)
 {
-    int count;
+	char	*temp;
+	int		x;
 
-    count = 0;
-    expand->inner = 0;
-    expand->quote = '\0';
-    if (!token->content || !token->content[expand->outer])
-        return (0);
-    while (token->content[expand->outer][expand->inner])
-    {
-        if (token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
-        {
-            expand->quote = token->content[expand->outer][expand->inner];
-            count++;
-            expand->inner++;
-            break;
-        }
-        expand->inner++;
-    }
-    while (token->content[expand->outer][expand->inner])
-    {
-        if (count % 2 == 0)
-        {
-            while (token->content[expand->outer][expand->inner])
-            {
-                if (token->content[expand->outer][expand->inner] == '\'' || token->content[expand->outer][expand->inner] == '\"')
-                {
-                    expand->quote = token->content[expand->outer][expand->inner];
-                    count++;
-                    expand->inner++;
-                    break;
-                }
-                expand->inner++;
-            }
-        }
-        if (token->content[expand->outer][expand->inner] == expand->quote)
-            count++;
-        expand->inner++;
-    }
-    return (count);
+	if (!token || !token->content)
+		return ;
+	x = count_quotes(token, expand);
+	if (x == 0)
+		return ;
+	temp = malloc(ft_strlen(token->content[expand->out]) - x + 1);
+	if (!temp)
+		exit(123);
+	process_quotes(token, expand, temp);
+	free(token->content[expand->out]);
+	token->content[expand->out] = temp;
+}
+
+static void	count_extension(t_token *token, t_expand *expand, int *count)
+{
+	while (token->content[expand->out][expand->in])
+	{
+		if (*count % 2 == 0)
+		{
+			while (token->content[expand->out][expand->in])
+			{
+				if (token->content[expand->out][expand->in] == '\''
+					|| token->content[expand->out][expand->in] == '\"')
+				{
+					expand->quote = token->content[expand->out][expand->in];
+					(*count)++;
+					expand->in++;
+					break ;
+				}
+				expand->in++;
+			}
+		}
+		if (token->content[expand->out][expand->in] == expand->quote)
+			(*count)++;
+		expand->in++;
+	}
+}
+
+// count quotes to be removed
+int	count_quotes(t_token *token, t_expand *expand)
+{
+	int	count;
+
+	count = 0;
+	expand->in = 0;
+	expand->quote = '\0';
+	if (!token->content || !token->content[expand->out])
+		return (0);
+	while (token->content[expand->out][expand->in])
+	{
+		if (token->content[expand->out][expand->in] == '\''
+			|| token->content[expand->out][expand->in] == '\"')
+		{
+			expand->quote = token->content[expand->out][expand->in];
+			count++;
+			expand->in++;
+			break ;
+		}
+		expand->in++;
+	}
+	count_extension(token, expand, &count);
+	return (count);
 }

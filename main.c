@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/16 18:05:17 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/20 18:11:30 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,49 +70,46 @@ void	print_tokens(t_token *arg)
 
 int	ft_executor(t_shell *shell, t_token *token)
 {
-	// while (token)
-	// {
-		if (token->content && token->content[0])
+
+	if (token->content && token->content[0])
+	{
+		if (ft_strcmp(token->content[0], "env") == 0
+			&& token->content[1] == NULL)
 		{
-			if (ft_strcmp(token->content[0], "env") == 0
-				&& token->content[1] == NULL)
-			{
-				print_env(shell,shell->env);
-				return (1);
-			}
-			else if (ft_strcmp(token->content[0], "echo") == 0)
-			{
-				echo_command(shell, token);
-				return (1);
-			}
-			else if (ft_strcmp(token->content[0], "export") == 0)
-			{
-				export_command(shell, token);
-				return (1);
-			}
-			else if (ft_strcmp(token->content[0], "unset") == 0)
-			{
-				unset_command(shell, token);
-				return (1);
-			}
-			else if (ft_strcmp(token->content[0], "pwd") == 0)
-			{
-				ft_pwd();
-				return (1);
-			}
-			else if (ft_strcmp(token->content[0], "cd") == 0)
-			{
-				ft_cd(shell, token);
-				return (1);
-			}
-			else if (ft_strcmp(token->content[0], "exit") == 0)
-			{
-				ft_exit(token,shell);
-				return (1);
-			}
+			print_env(shell,shell->env);
+			return (1);
 		}
-		// token = token->next;
-	// }
+		else if (ft_strcmp(token->content[0], "echo") == 0)
+		{
+			echo_command(shell, token);
+			return (1);
+		}
+		else if (ft_strcmp(token->content[0], "export") == 0)
+		{
+			export_command(shell, token);
+			return (1);
+		}
+		else if (ft_strcmp(token->content[0], "unset") == 0)
+		{
+			unset_command(shell, token);
+			return (1);
+		}
+		else if (ft_strcmp(token->content[0], "pwd") == 0)
+		{
+			ft_pwd();
+			return (1);
+		}
+		else if (ft_strcmp(token->content[0], "cd") == 0)
+		{
+			ft_cd(shell, token);
+			return (1);
+		}
+		else if (ft_strcmp(token->content[0], "exit") == 0)
+		{
+			ft_exit(token,shell);
+			return (1);
+		}
+	}
 	return (0);
 }
 
@@ -123,14 +120,17 @@ void	init_minishell(t_shell *shell)
 
 	while (1)
 	{
+		shell->exit_status = g_exit_status;
+		g_exit_status = 0;
 		shell->prompt = readline("\033[93mArab Spring 🐣🐥 -> \033[0m");
 		if (!shell->prompt)
 		{
+			g_exit_status = shell->exit_status;
 			printf("exit\n");
 			if (shell->env)
 				free_env(shell->env);
 			free(shell);
-			exit(0);
+			exit(g_exit_status);
 		}
 		if (!ft_strcmp(shell->prompt, ""))
 			continue ;
@@ -149,6 +149,11 @@ void	init_minishell(t_shell *shell)
 			if (tokens)
 			{
 				ft_parser(tokens, parser, shell);
+				if (shell->paths)
+				{
+					ft_free_2d(shell->paths);
+					shell->paths = NULL;
+				}
 				ft_expander(shell, tokens);
 			}
 			// print_tokens(tokens);

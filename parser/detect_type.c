@@ -3,66 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   detect_type.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 00:16:39 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/14 00:45:30 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/17 01:46:54 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-int	check_built_ins(t_parser *parser, t_token *temp)
-{
-	int	flag;
-
-	flag = 0;
-	if (!ft_strcmp(temp->content[parser->index], "cd"))
-		flag = 1;
-	else if (!ft_strcmp(temp->content[parser->index], "export"))
-		flag = 1;
-	else if (!ft_strcmp(temp->content[parser->index], "unset"))
-		flag = 1;
-	else if (!ft_strcmp(temp->content[parser->index], "exit"))
-		flag = 1;
-	else
-		flag = 0;
-	if (flag == 1)
-	{
-		temp->type[parser->index] = COMMAND;
-		parser->command_flag = 1;
-		return (1);
-	}
-	else
-		return (0);
-}
-
-void	detect_command(t_parser *parser, t_token *temp, char **paths)
-{
-	char	*command_path;
-	int		i;
-
-	command_path = NULL;
-	i = 0;
-	if (check_built_ins(parser, temp) == 1)
-		return ;
-	while (paths[i])
-	{
-		command_path = ft_strjoin(paths[i], temp->content[parser->index]);
-		if (!command_path)
-			exit(EXIT_FAILURE);
-		if (!access(command_path, X_OK))
-		{
-			temp->type[parser->index] = COMMAND;
-			parser->command_flag = 1;
-			if (command_path)
-				free(command_path);
-			break ;
-		}
-		i++;
-		free(command_path);
-	}
-}
 
 void	detect_arguments(t_parser *parser, t_token *temp)
 {

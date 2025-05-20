@@ -43,12 +43,13 @@ void	echo_command(t_shell *shell, t_token *token)
 	{
 		if (shell->cmd_list[shell->temp_index])
 		{
-			write(shell->fd_out,shell->cmd_list[shell->temp_index],ft_strlen(shell->cmd_list[shell->temp_index]));
+			write(shell->fd_out, shell->cmd_list[shell->temp_index],
+				ft_strlen(shell->cmd_list[shell->temp_index]));
 			if (shell->cmd_list[shell->temp_index + 1])
-				write(shell->fd_out," ",1);
+				write(shell->fd_out, " ", 1);
 		}
 		shell->temp_index++;
 	}
 	if (shell->echo_flag != 1)
-		write(shell->fd_out,"\n",1);
+		write(shell->fd_out, "\n", 1);
 }

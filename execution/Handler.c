@@ -6,24 +6,35 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:23:53 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/16 18:55:55 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/20 19:30:37 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-extern int g_exit_status;
+// extern int g_exit_status;
 
 void exit_execution(t_shell *shell, t_token *tokens, t_parser *parser)
 {
     if (tokens)
 		free_tokenizer(tokens);
 	if (shell->enviroment)
+	{
 		ft_free_2d(shell->enviroment);
+		shell->enviroment = NULL;
+	}
 	if (shell->env)
 		free_env(shell->env);
 	if (shell->cmd_list)
+	{
 		ft_free_2d(shell->cmd_list);
+		shell->cmd_list = NULL;
+	}
+	if (shell->paths)
+	{
+		ft_free_2d(shell->paths);
+		shell->paths = NULL;
+	}
     if(shell)
 	    free(shell);
 	if(parser)
@@ -156,18 +167,37 @@ int     count_heredoc(t_token *tokens)
     return(counter);
 }
 
-int    open_heredocs(t_shell *shell,char *exit, char *file)
+static void heredoc_signal_handler(int sig)
+{
+    (void)sig;
+    rl_redisplay();
+    write(2, "^C\n", 3);
+	rl_on_new_line();
+    exit(128 + SIGINT);
+}
+
+int    open_heredocs(t_shell *shell,char *exit_heredoc, char *file)
 {
     char *text = NULL;
-    if (exit[0] == '\'' || exit[0] == '\"')
-        exit = remove_qoutes(exit,shell);
+    if (exit_heredoc[0] == '\'' || exit_heredoc[0] == '\"')
+        exit_heredoc = remove_qoutes(exit_heredoc,shell);
     int fd = open(file, O_CREAT | O_RDWR | O_TRUNC, 0644);
     while (1)
     {
-        text = readline(">");
+        text = readline("> ");
+        if (!text)
+        {
+            char *tmp = ft_strjoin("ARSSH: warning: here-document delimited by end-of-file ( wanted `", exit_heredoc);
+            char *t = ft_strjoin(tmp, "\')\n");
+            free(tmp);
+            write(2, t, ft_strlen(t));
+            free(t);
+            free(text);
+            exit(0);
+        }
         if(shell->expand_flag)
             text = expand_heredoc(text, shell);
-        if (text && exit && !ft_strcmp(text, exit))
+        if (text && exit_heredoc && !ft_strcmp(text, exit_heredoc))
         {
             free(text);
             text = NULL;
@@ -177,7 +207,7 @@ int    open_heredocs(t_shell *shell,char *exit, char *file)
         write(fd, "\n", 1);
         free(text);
     }
-    free(exit);
+    free(exit_heredoc);
     return (fd);
 }
 
@@ -186,10 +216,20 @@ void    heredoc_handle(t_token *tokens , t_shell *shell)
     t_token *temp;
     int i;
     int fd;
+    pid_t       pid;
+    struct sigaction sa;
+    struct sigaction original_sa;
+    int         status;
 
 	temp = tokens;
 	i = 0;
 	fd = 0;
+    pid = 0;
+    sigaction(SIGINT, NULL, &original_sa);
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
 	while (temp)
 	{
 		i = 0;
@@ -197,11 +237,36 @@ void    heredoc_handle(t_token *tokens , t_shell *shell)
 		{
 			if(temp->type[i] == HEREDOC)
 			{
-				char *exit = ft_strdup(temp->content[i+1]);
-				if(fd)
-					close(fd);
-				fd = open_heredocs(shell, exit, temp->heredoc_file);
-			}
+                pid = fork();
+                if (pid == 0)
+                {
+                    sa.sa_handler = heredoc_signal_handler;
+                    sa.sa_flags = 0;
+                    sigemptyset(&sa.sa_mask);
+                    sigaction(SIGINT, &sa, NULL);
+			    	char *exit_heredoc = ft_strdup(temp->content[i+1]);
+			    	if(fd)
+			    		close(fd);
+			    	fd = open_heredocs(shell, exit_heredoc, temp->heredoc_file);
+                    exit(0);
+                }
+                else if (pid > 0)
+                {
+                    waitpid(pid, &status, 0);
+                    sigaction(SIGINT, &original_sa, NULL);
+                    if (WIFEXITED(status))
+                    {
+                        g_exit_status = WEXITSTATUS(status);
+                        if (g_exit_status == 128 + SIGINT)
+                        return;
+                    }
+                    else if (WIFSIGNALED(status))
+                    {
+                        g_exit_status = 128 + WTERMSIG(status);
+                        return;
+                    }
+                }
+            }
 			i++;
 		}
 		if(fd)
@@ -267,12 +332,12 @@ int	create_heredoc_files(t_token *tokens)
 
 void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
 {
-    char	*cmd;
-    int		j = 0;
-    int		pipes_count = how_many_pipes(tokens);
-    int		pids[pipes_count + 1];               // Number of commands = pipes_count + 1
-    int		pipes[pipes_count][2];               // Number of pipes = pipes_count
-    int		i = 0;
+    char *cmd;
+    int j = 0;
+    int pipes_count = how_many_pipes(tokens);
+    int pids[pipes_count + 1];               // Number of commands = pipes_count + 1
+    int pipes[pipes_count][2];               // Number of pipes = pipes_count
+    int i = 0;
     
     // Create pipes
     while (i < pipes_count) 
@@ -286,12 +351,9 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
     }
     i = 0;
     // Create child processes for each command
-	if (is_there_heredoc(tokens))
-	{
-		create_heredoc_files(tokens);
-		heredoc_handle(tokens, shell);
-	}
-    while (i < pipes_count + 1)
+    create_heredoc_files(tokens);
+	heredoc_handle(tokens,shell);
+    while (tokens)//i < pipes_count + 1)
     {
         pids[i] = fork();
         if (pids[i] == -1) 
@@ -299,7 +361,7 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
             write(2, "Error with creating process\n", 29);
             return;
         }
-        if (pids[i] == 0)
+        if (pids[i] == 0) 
         {
             g_exit_status = 0;
             shell->fd_out = 2;
@@ -402,7 +464,6 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                     {
                         if (tokens->type[x] == REDIRECTOUT)
                         {
-							fprintf(stderr, "redirect out\n");
                             count_rout++;
                             int file_fd = open(tokens->content[x + 1], O_CREAT | O_RDWR | O_TRUNC, 0644);
                             if (file_fd == -1) 
@@ -432,7 +493,7 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                             }
                             if(count_append == 1)
                             {
-                                dup2(pipes[i - 1][0], STDIN_FILENO);
+                                dup2(pipes[i - 1][0],STDIN_FILENO);
                                 close(pipes[i - 1][0]); 
                             }
                             shell->fd_out = dup(file_fd);
@@ -483,7 +544,6 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                     {
                         if (tokens->type[x] == REDIRECTOUT)
                         {
-							fprintf(stderr, "redirect out\n");
                             count_rout++;
                             int file_fd = open(tokens->content[x + 1], O_CREAT | O_RDWR | O_TRUNC, 0644);
                             if (file_fd == -1)
@@ -524,7 +584,7 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                         {
                             count_rin++;
                             int file_fd = open(tokens->content[x + 1], O_RDONLY);
-                            if (file_fd == -1)
+                            if (file_fd == -1) 
                             {
                                 perror("Error");
                                 close(file_fd);
@@ -555,21 +615,17 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                         close(pipes[i][1]);
                     }
                 }
-				fprintf(stderr, "shell->cmd = %s\n", shell->cmd_list[0]);
             }
             if(is_there_command(tokens))
             {
-				if(ft_executor(shell,tokens))
+                if(ft_executor(shell,tokens))
                 {
-					fprintf(stderr, "hello there\n");
                     if(shell->fd_out)
-					close(shell->fd_out);
+		                close(shell->fd_out);
                     exit(0);
                 }
-				fprintf(stderr, "COMMAND\n");
-                // else
-                // {
-					// fprintf(stderr, "COMMAND\n");
+                else
+                {
                     get_paths(shell);
                     if (!shell->paths)
                     {
@@ -583,15 +639,15 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                     }
                     if (!shell->enviroment)
                         shell->enviroment = get_env(shell->env);
-                    if (shell->cmd_list[0] && (shell->cmd_list[0][0] == '.' || shell->cmd_list[0][0] == '/'))
+                    if (shell->cmd_list[0] && (shell->cmd_list[0][0] == '.' || shell->cmd_list[0][0] == '/')) 
                     {
                         if (!access(shell->cmd_list[0], X_OK))
                             cmd = ft_strdup(shell->cmd_list[0]);
                     } 
-                    else if (shell->cmd_list[0])
+                    else if (shell->cmd_list[0]) 
                     {
                         j = 0;
-                        while (shell->paths && shell->paths[j])
+                        while (shell->paths && shell->paths[j]) 
                         {
                             cmd = ft_strjoin(shell->paths[j], shell->cmd_list[0]);
                             if (!cmd)
@@ -629,7 +685,7 @@ void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser)
                         }
                     }
                     execve(cmd, shell->cmd_list, shell->enviroment);
-                
+                }
             }
             exit(1);
         }

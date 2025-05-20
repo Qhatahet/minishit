@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/15 19:42:20 by oalananz         ###   ########.fr       */
+/*   Updated: 2025/05/20 16:17:57 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,45 +14,46 @@
 # define MINISHELL_H
 
 # include "../libft/libft.h"
+# include <dirent.h>
 # include <readline/history.h>
 # include <readline/readline.h>
+# include <signal.h>
 # include <stdio.h>
 # include <stdlib.h>
-# include <sys/wait.h>
-# include <signal.h> 
 # include <sys/types.h>
-# include <dirent.h>
+# include <sys/wait.h>
 
-extern int g_exit_status;
+extern int			g_exit_status;
 
 typedef struct s_env
 {
-	char				*variable;
-	char				*content;
-	struct s_env		*next;
-}						t_env;
+	char			*variable;
+	char			*content;
+	struct s_env	*next;
+}					t_env;
 
 typedef struct s_heredoc
 {
-	char	**heredocs;
-	char	**exit;
-}	t_heredoc;
+	char			**heredocs;
+	char			**exit;
+}					t_heredoc;
 
 typedef struct s_fds
 {
-	int	fd_in[2];
-	int	fd_out[2];
-	int	fd_heredoc;
-	int	saved_out;
-	int	saved_in;
-	int	flag_out;
-	int	flag_in;
-	int	flag_expand;
-	int	flag_heredoc;
-	char	**list;
-	char	*temp;
-}			t_fds;
-
+	int				fd_in[2];
+	int				fd_out[2];
+	int				fd_heredoc;
+	int				saved_out;
+	int				saved_in;
+	int				flag_out;
+	int				flag_in;
+	int				flag_expand;
+	int				flag_heredoc;
+	char			*out_file;
+	char			*in_file;
+	char			**list;
+	char			*temp;
+}					t_fds;
 
 typedef struct s_export
 {
@@ -87,6 +88,7 @@ typedef struct s_shell
 	int				quote_counter;
 	int				expand_flag;
 	int				fd_out;
+	int				exit_status;
 	t_env			*env;
 }					t_shell;
 
@@ -113,12 +115,13 @@ typedef struct s_token
 
 typedef struct s_expand
 {
-	int				outer;
-	int				inner;
+	int				out;
+	int				in;
 	int				flag;
 	char			quote;
 	char			*variable;
 	int				single_qoute;
+	int				dex;
 }					t_expand;
 
 // toknizer
@@ -148,65 +151,82 @@ int					detect_filename(t_parser *parser, t_token *temp);
 
 // expander
 void				ft_expander(t_shell *shell, t_token *token);
-int	count_quotes(t_token *token, t_expand *expand);
+int					count_quotes(t_token *token, t_expand *expand);
 void				expand_dollar(t_shell *shell, t_token *token,
 						t_expand *expand);
-void	expand_dollar(t_shell *shell,t_token *token, t_expand *expand);
+void				expand_dollar(t_shell *shell, t_token *token,
+						t_expand *expand);
 void				check_cmd(t_token *token, t_expand *expand, char **paths);
 void				quote_remover(t_token *token, t_expand *expand);
+int					numlen(int n);
+int					count_length(t_shell *shell, t_token *token,
+						t_expand *expand);
+void				handle_dollar(t_shell *shell, t_token *token,
+						t_expand *expand, char *temp);
+int					count_dollar(t_token *token, t_expand *expand);
 
 // env command
-void					env_copy(t_shell *shell, char **env);
-void	print_env(t_shell *shell ,t_env *env);
-void					env_edit(t_shell *shell);
-t_env					*create_env_node(void);
+void				env_copy(t_shell *shell, char **env);
+void				print_env(t_shell *shell, t_env *env);
+void				env_edit(t_shell *shell);
+t_env				*create_env_node(void);
 
 // echo command
-void					echo_command(t_shell *shell, t_token *token);
+void				echo_command(t_shell *shell, t_token *token);
 
-//export command
-void	ft_free_2d(char **a);
-void	sorted_print(t_env *env);
-void	export_command(t_shell *shell,t_token *token);
-void 	scan_env(t_shell *shell, t_export *export);
-int		env_count(t_env *env);
+// export command
+void				ft_free_2d(char **a);
+void				sorted_print(t_env *env);
+void				export_command(t_shell *shell, t_token *token);
+void				scan_env(t_shell *shell, t_export *export);
+int					env_count(t_env *env);
+void				concat_content(t_shell *shell, t_export *export);
+void				edit_content(t_shell *shell, t_export *export);
+void				env_shlvl(t_shell *shell);
+void				add_variable(t_shell *shell, t_export *export);
 
 // unset command
-void	unset_command(t_shell *shell, t_token *token);
+void				unset_command(t_shell *shell, t_token *token);
 
-// pwd and cd 
-void	ft_pwd();
-void	ft_cd(t_shell *shell, t_token *token);
-
+// pwd and cd
+void				ft_pwd(void);
+void				ft_cd(t_shell *shell, t_token *token);
 
 // signal and exit status
-void signal_handler(void);
-void    ft_exit(t_token *token , t_shell *shell);
+void				signal_handler(void);
+void				ft_exit(t_token *token, t_shell *shell);
 
+// exit
+void				free_env(t_env *env);
+void				free_tokenizer(t_token *tokens);
+void				free_shell(t_shell *shell);
+int					valid_arg(char *status);
 
 // execute
-void	execute(t_shell *shell, t_token *tokens, t_parser *parser);
-void	add_backslash(t_shell *shell);
-void	get_paths(t_shell *shell);
-void	free_tokenizer(t_token *tokens);
-void	free_env(t_env *env);
-int	ft_executor(t_shell *shell, t_token *token);
-void	open_heredoc(t_shell *shell, char **lst, t_fds *fds);
-void	skip_spaces(t_shell *shell);
-void exit_execution(t_shell *shell, t_token *tokens, t_parser *parser);
-void execute_multiple(t_token *tokens, t_shell *shell, t_parser *parser);
-char	**get_env(t_env *env);
-char	**create_list(t_token *tokens, t_fds *fd, t_shell *shell);
-int	how_many_pipes(t_token *tokens);
-char **rearrange_list(t_token *tokens);
-int	is_there_redirect(t_token *tokens);
-char	*expand_heredoc(char *text, t_shell *shell);
-char *remove_qoutes(char *string, t_shell *shell);
-int	is_there_command(t_token *tokens);
-char **rearrange_list(t_token *tokens);
-int	redirect_first_arg(t_token *tokens);
-char	**rearrange_list_redirect(t_token *tokens);
-int	is_there_heredoc(t_token *tokens);
-int	create_heredoc_files(t_token *tokens);
+void				execute(t_shell *shell, t_token *tokens, t_parser *parser);
+void				add_backslash(t_shell *shell);
+void				get_paths(t_shell *shell);
+void				free_tokenizer(t_token *tokens);
+void				free_env(t_env *env);
+int					ft_executor(t_shell *shell, t_token *token);
+void				open_heredoc(t_shell *shell, char **lst, t_fds *fds);
+void				skip_spaces(t_shell *shell);
+void				exit_execution(t_shell *shell, t_token *tokens,
+						t_parser *parser);
+void				execute_multiple(t_token *tokens, t_shell *shell,
+						t_parser *parser);
+char				**get_env(t_env *env);
+char				**create_list(t_token *tokens, t_fds *fd, t_shell *shell);
+int					how_many_pipes(t_token *tokens);
+char				**rearrange_list(t_token *tokens);
+int					is_there_redirect(t_token *tokens);
+char				*expand_heredoc(char *text, t_shell *shell);
+char				*remove_qoutes(char *string, t_shell *shell);
+int					is_there_command(t_token *tokens);
+char				**rearrange_list(t_token *tokens);
+int					redirect_first_arg(t_token *tokens);
+char				**rearrange_list_redirect(t_token *tokens);
+int					is_there_heredoc(t_token *tokens);
+int					create_heredoc_files(t_token *tokens);
 
 #endif

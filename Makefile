@@ -10,10 +10,11 @@ SRCS = main.c signals.c\
     ./built-in/environment/env.c ./built-in/environment/env_utils.c\
 	./tokenizer/tokenizer.c ./tokenizer/token_utils.c ./tokenizer/token_size.c ./tokenizer/prompt_check.c \
 	./parser/detect_type.c ./parser/parser.c \
-	./expander/expander.c  ./expander/expander_quotes.c ./expander/expander_env.c ./expander/expand_dollar.c \
+	./expander/expander.c  ./expander/expander_quotes.c ./expander/count_dollar.c ./expander/expand_dollar.c ./expander/handle_dollar.c \
 	./built-in/echo/echo_command.c \
-	./built-in/export/export.c ./built-in/export/export_utils.c \
-	./built-in/unset.c ./built-in/cd.c ./built-in/pwd.c ./built-in/exit.c \
+	./built-in/export/export.c ./built-in/export/export_utils.c ./built-in/export/export_norm.c \
+	./built-in/unset.c ./built-in/cd.c ./built-in/pwd.c \
+	./built-in/exit/exit.c ./built-in/exit/exit_utils.c \
 	./execution/execution.c ./execution/HereDoc/heredoc.c ./execution/Handler.c\
 
 OBJS_DIR := objects

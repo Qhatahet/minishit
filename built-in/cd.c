@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/29 02:54:32 by qais              #+#    #+#             */
-/*   Updated: 2025/05/03 06:08:27 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/20 19:44:41 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	change_pwd(t_shell *shell, char *s, char *oldpwd)
 	pwd = shell->env;
 	if (chdir(s) == -1)
 	{
-		printf("hello there : wrong directory\n");
+		printf("ARSSH: wrong directory\n");
 		return ;
 	}
 	change_oldpwd(shell, oldpwd);
@@ -79,7 +79,8 @@ void	ft_cd(t_shell *shell, t_token *token)
 		if (!access(tmp->content[i], X_OK))
 			change_pwd(shell, tmp->content[i], cwd);
 		else
-			printf("arssh: cd: %s: No such file or directory\n", tmp->content[i]);
+			printf("arssh: cd: %s: No such file or directory\n",
+				tmp->content[i]);
 	}
 	else if (!tmp->content[i] || !ft_strcmp(tmp->content[i], "~"))
 		change_pwd(shell, grep_home(shell), cwd);

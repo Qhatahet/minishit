@@ -1,256 +1,84 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   expand_dollar.c                                       :+:      :+:    :+:   */
+/*   expand_dollar.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: oalananz <oalananz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/30 06:02:02 by oalananz          #+#    #+#             */
-/*   Updated: 2025/04/05 12:36:33 by oalananz         ###   ########.fr       */
+/*   Created: 2025/05/17 01:41:38 by oalananz          #+#    #+#             */
+/*   Updated: 2025/05/17 01:42:23 by oalananz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static void	handle_dollar(t_shell *shell, t_token *token, t_expand *expand, char *temp, int *i)
+static void	double_quote_handle(t_token *token, t_expand *expand,
+		t_shell *shell, char *temp)
 {
-	t_env	*current;
-	char	*digit;
-	int		index;
-	int		count;
-
-	count = 0;
-	expand->inner++;
-	if(token->content[expand->outer][expand->inner] == ' ' || token->content[expand->outer][expand->inner] == '\0')
-		temp[(*i)++] = '$';
-	else if(token->content[expand->outer][expand->inner] == '?')
+	if (token->content[expand->out][expand->in] == '\"')
 	{
-		char *tmp = NULL;
-		tmp = ft_itoa(g_exit_status);
-		expand->inner++;
-		while(tmp[count])
-			temp[(*i)++] = tmp[count++];
-		free(tmp);
-	}
-	else if(ft_isdigit(token->content[expand->outer][expand->inner]) && token->content[expand->outer][expand->inner] == '0')
-	{
-		digit = ft_strdup("ARSSH");
-		expand->inner++;
-		while(digit[count])
-			temp[(*i)++] = digit[count++];
-		free(digit);
-	}
-	else if(ft_isdigit(token->content[expand->outer][expand->inner]))
-		expand->inner++;
-	else
-	{
-		while(token->content[expand->outer][expand->inner] && (ft_isalnum(token->content[expand->outer][expand->inner]) || token->content[expand->outer][expand->inner] == '_'))
+		temp[expand->dex++] = token->content[expand->out][expand->in++];
+		while (token->content[expand->out][expand->in]
+			&& token->content[expand->out][expand->in] != '\"')
 		{
-			expand->inner++;
-			count++;
-		}
-		expand->variable = ft_substr(token->content[expand->outer],expand->inner - count,count);
-		printf("variable -> %s\n",expand->variable);
-		current = shell->env;
-		while (current)
-		{
-			if (ft_strcmp(current->variable, expand->variable) == 0)
+			if (token->content[expand->out][expand->in] == '$')
 			{
-				index = 0;
-				while(current->content[index])
-					temp[(*i)++] = current->content[index++];
-				return ;
-			}
-			current = current->next;
-		}
-		free(expand->variable);
-		expand->variable = NULL;
-	}
-	if (expand->variable)
-	{
-		free(expand->variable);
-		expand->variable = NULL;
-	}
-}
-
-int	numlen(int n)
-{
-	int	len;
-
-	len = 0;
-	if (n <= 0)
-		len++;
-	while (n != 0)
-	{
-		n /= 10;
-		len++;
-	}
-	return (len);
-}
-
-int		content_len(t_shell *shell,t_token *token, t_expand *expand)
-{
-	t_env	*current;
-
-	int count = 0;
-	expand->inner++;
-	if(token->content[expand->outer][expand->inner] == ' ' || token->content[expand->outer][expand->inner] == '\0')
-		count++;
-	else if(token->content[expand->outer][expand->inner] == '?')
-	{
-		expand->inner++;
-		count += numlen(g_exit_status);
-	}
-	else if(token->content[expand->outer][expand->inner] == '0')
-	{
-		expand->inner++;
-		count += 5;
-	}
-	else if(ft_isdigit(token->content[expand->outer][expand->inner]))
-		expand->inner++;
-	else
-	{
-		while(token->content[expand->outer][expand->inner] && (ft_isalpha(token->content[expand->outer][expand->inner]) || token->content[expand->outer][expand->inner] == '_'))
-		{
-			expand->inner++;
-			count++;
-		}
-		expand->variable = ft_substr(token->content[expand->outer],expand->inner - count,count);
-		current = shell->env;
-		while (current)
-		{
-			if (ft_strcmp(current->variable, expand->variable) == 0)
-			{
-				count = ft_strlen(current->content);
-				printf("count = %d\n",count);
-				return (count);
-			}
-			current = current->next;
-		}
-	}
-	return (count - ft_strlen(expand->variable));
-}
-
-int		count_length(t_shell *shell,t_token *token, t_expand *expand)
-{
-	expand->inner = 0;
-	int size = 0;
-	if (!token->content || !token->content[expand->outer])
-    	return (0);
-	while(expand->inner < (int)ft_strlen(token->content[expand->outer]) && token->content[expand->outer][expand->inner])
-	{
-		if(token->content[expand->outer][expand->inner] == '\"')
-		{
-			size++;
-			expand->inner++;
-			while(token->content[expand->outer][expand->inner] && token->content[expand->outer][expand->inner] != '\"')
-			{
-				if(token->content[expand->outer][expand->inner] == '$')
+				handle_dollar(shell, token, expand, temp);
+				if (expand->variable)
 				{
-					size += content_len(shell,token,expand) - 1;
 					free(expand->variable);
 					expand->variable = NULL;
 				}
-				expand->inner++;
-				size++;
 			}
+			else
+				temp[expand->dex++] = token->content[expand->out][expand->in++];
 		}
-		if(token->content[expand->outer][expand->inner] == '\'')
+	}
+}
+
+static void	single_quote_handle(t_token *token, t_expand *expand,
+		t_shell *shell, char *temp)
+{
+	if (token->content[expand->out][expand->in] == '\'')
+	{
+		temp[expand->dex++] = token->content[expand->out][expand->in++];
+		while (token->content[expand->out][expand->in]
+			&& token->content[expand->out][expand->in] != '\'')
+			temp[expand->dex++] = token->content[expand->out][expand->in++];
+		temp[expand->dex++] = token->content[expand->out][expand->in++];
+	}
+	else if (token->content[expand->out][expand->in] == '$')
+	{
+		handle_dollar(shell, token, expand, temp);
+		if (expand->variable)
 		{
-			size++;
-			expand->inner++;
-			while(token->content[expand->outer][expand->inner] && token->content[expand->outer][expand->inner] != '\'')
-			{
-				expand->inner++;
-				size++;
-			}
-			size++;
-			expand->inner++;
-		}
-		else if(token->content[expand->outer][expand->inner] == '$')
-		{
-			size += content_len(shell,token,expand);
 			free(expand->variable);
 			expand->variable = NULL;
 		}
-		else
-		{
-			expand->inner++;
-			size++;
-		}
 	}
-	expand->inner = 0;
-	printf("expected size = %d\n",size);
-	return (size);
+	else if (token->content[expand->out][expand->in])
+		temp[expand->dex++] = token->content[expand->out][expand->in++];
 }
 
-int count_dollar(t_token *token,t_expand *expand)
-{
-	int count = 0;
-	int i = 0;
-	while(token->content[expand->outer][i])
-	{
-		if(token->content[expand->outer][i] == '$')
-			count++;
-		i++;
-	}
-	return(count);
-}
-
-void	expand_dollar(t_shell *shell,t_token *token, t_expand *expand)
+void	expand_dollar(t_shell *shell, t_token *token, t_expand *expand)
 {
 	char	*temp;
-	int		i;
 	int		x;
 
-	x = count_length(shell,token,expand);
-	if((int)ft_strlen(token->content[expand->outer]) == x)
+	expand->dex = 0;
+	x = count_length(shell, token, expand);
+	if ((int)ft_strlen(token->content[expand->out]) == x)
 		return ;
-	temp = malloc(x + count_dollar(token,expand));
-	if(!temp)
+	temp = malloc(x + count_dollar(token, expand));
+	if (!temp)
 		exit(130);
-	i = 0;
 	expand->variable = NULL;
-	while(token->content[expand->outer][expand->inner])
+	while (token->content[expand->out][expand->in])
 	{
-		if(token->content[expand->outer][expand->inner] == '\"')
-		{
-			temp[i++] = token->content[expand->outer][expand->inner++];
-			while(token->content[expand->outer][expand->inner] && token->content[expand->outer][expand->inner] != '\"')
-			{
-				if(token->content[expand->outer][expand->inner] == '$')
-				{
-					handle_dollar(shell,token,expand,temp,&i);
-					if (expand->variable)
-					{
-						free(expand->variable);
-						expand->variable = NULL;
-					}
-				}	
-				else
-					temp[i++] = token->content[expand->outer][expand->inner++];
-			}
-		}
-		if(token->content[expand->outer][expand->inner] == '\'')
-		{
-			temp[i++] = token->content[expand->outer][expand->inner++];
-			while(token->content[expand->outer][expand->inner] && token->content[expand->outer][expand->inner] != '\'')
-				temp[i++] = token->content[expand->outer][expand->inner++];
-			temp[i++] = token->content[expand->outer][expand->inner++];
-		}
-		else if(token->content[expand->outer][expand->inner] == '$')
-		{
-			handle_dollar(shell,token,expand,temp,&i);
-			if (expand->variable)
-			{
-				free(expand->variable);
-				expand->variable = NULL;
-			}
-		}
-		else if(token->content[expand->outer][expand->inner])
-			temp[i++] = token->content[expand->outer][expand->inner++];
+		double_quote_handle(token, expand, shell, temp);
+		single_quote_handle(token, expand, shell, temp);
 	}
-	temp[i] = '\0';
-	free(token->content[expand->outer]);
-	token->content[expand->outer] = temp;
+	temp[expand->dex] = '\0';
+	free(token->content[expand->out]);
+	token->content[expand->out] = temp;
 }
