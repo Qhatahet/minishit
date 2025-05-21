@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/21 10:52:04 by qais             ###   ########.fr       */
+/*   Updated: 2025/05/21 19:20:27 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -492,12 +492,14 @@ void	restore_in_out(t_fds *fd)
 	if (fd->flag_out || fd->flag_append)
 	{
 		dup2(fd->saved_out, STDOUT_FILENO);
-		close (fd->saved_out);
+		if (fd->saved_out > 0)
+			close (fd->saved_out);
 	}
 	if (fd->flag_in)
 	{
 		dup2(fd->saved_in, STDIN_FILENO);
-		close (fd->saved_in);
+		if (fd->saved_in > 0)
+			close (fd->saved_in);
 	}
 	if (fd->temp)
 		free(fd->temp);
@@ -531,9 +533,46 @@ void	exit_cmd_not_found(t_shell *shell, t_token *tokens, t_parser *parser, t_fds
 	exit(127);
 }
 
+void	execute_cmd_with_path(t_shell *shell, t_token *tokens,
+		t_parser *parser, t_fds *fd)
+{
+	if (!access(shell->cmd_list[0], X_OK))
+				shell->cmd = ft_strdup(shell->cmd_list[0]);
+	else
+		exit_cmd_not_found(shell, tokens, parser, fd);
+}
+
+int	execute_built_in(t_shell *shell, t_token *tokens, t_fds *fd)
+{
+	if (ft_executor(shell, tokens))
+	{
+		if(shell->fd_out)
+			close(shell->fd_out);
+		if (fd->flag_out || fd->flag_append)
+		{
+			dup2(fd->saved_out, STDOUT_FILENO);
+			close (fd->saved_out);
+		}
+		ft_free_2d(shell->cmd_list);
+		// exit_execution(shell,tokens,parser);
+		return (1);
+	}
+	return(0);
+}
+
+void	get_exit_status(int id)
+{
+	int status;
+
+	waitpid(id, &status, 0);
+    if (WIFEXITED(status))
+		g_exit_status = WEXITSTATUS(status);
+    else if (WIFSIGNALED(status))
+		g_exit_status = 128 + WTERMSIG(status);
+}
+
 void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 {
-	char	*cmd;
 	t_fds	*fd;
 	int		id;
 	int		j;
@@ -546,25 +585,13 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 	if (!shell->cmd_list)
 		return ;
 	if(fd->flag_out || fd->flag_append)
-		shell->fd_out = dup(fd->fd_out[0]);
-	if (ft_executor(shell, tokens))
-	{
-		if(shell->fd_out)
-			close(shell->fd_out);
-		if (fd->flag_out || fd->flag_append)
-		{
-			dup2(fd->saved_out, STDOUT_FILENO);
-			close (fd->saved_out);
-		}
-		ft_free_2d(shell->cmd_list);
-		// exit_execution(shell,tokens,parser);
+		shell->fd_out = fd->fd_out[0];
+	if (execute_built_in(shell, tokens, fd))
 		return ;
-	}
 	id = fork();
 	if (id == 0)
 	{
 		g_exit_status = 0;
-		// shell->exit_status = 0;
 		j = 0;
 		check_files_in_child(fd);
 		get_paths(shell);
@@ -576,26 +603,21 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 		if (!shell->enviroment)
 			shell->enviroment = get_env(shell->env);
 		if (shell->cmd_list[0] && (shell->cmd_list[0][0] == '.' || shell->cmd_list[0][0] == '/'))
-		{
-			if (!access(shell->cmd_list[0], X_OK))
-				cmd = ft_strdup(shell->cmd_list[0]);
-			else
-				exit_cmd_not_found(shell, tokens, parser, fd);
-		}
+			execute_cmd_with_path(shell, tokens, parser, fd);
 		else if (shell->cmd_list[0])
 		{
 			while (shell->paths && shell->paths[j])
 			{
-				cmd = ft_strjoin(shell->paths[j], shell->cmd_list[0]);
-				if (!cmd)
+				shell->cmd = ft_strjoin(shell->paths[j], shell->cmd_list[0]);
+				if (!shell->cmd)
 					exit(EXIT_FAILURE);
-				if (!access(cmd, X_OK))
+				if (!access(shell->cmd, X_OK))
 					break;
-				free(cmd);
-				cmd = NULL;
+				free(shell->cmd);
+				shell->cmd = NULL;
 				j++;
 			}
-			if (!cmd)
+			if (!shell->cmd)
 				exit_cmd_not_found(shell, tokens, parser, fd);
 		}
 		else
@@ -604,16 +626,10 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 			free(fd);
 			exit(0);
 		}
-		execve(cmd, shell->cmd_list, shell->enviroment);
+		execve(shell->cmd, shell->cmd_list, shell->enviroment);
 	}
-	int status;
-	waitpid(id, &status, 0);
-    if (WIFEXITED(status))
-		g_exit_status = WEXITSTATUS(status);
-    else if (WIFSIGNALED(status))
-		g_exit_status = 128 + WTERMSIG(status);
+	get_exit_status(id);
 	restore_in_out(fd);
-	// exit_execution(shell, NULL, NULL);
 	if (shell->cmd_list)
 	{
 		ft_free_2d(shell->cmd_list);
