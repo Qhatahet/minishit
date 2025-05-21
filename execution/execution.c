@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/20 19:41:32 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/21 10:52:04 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,10 +233,15 @@ int	open_infiles(t_fds *fd, char **lst, int *i, int *j)
 
 void	dup_in(t_fds *fd, int *j)
 {
-	fd->fd_in[(*j)] = open(fd->in_file, O_RDONLY);
-	free(fd->in_file);
-	dup2(fd->fd_in[(*j)], STDIN_FILENO);
-	close(fd->fd_in[(*j)]);
+	if (fd->flag_in)
+	{
+		fd->fd_in[(*j)] = open(fd->in_file, O_RDONLY);
+		free(fd->in_file);
+		dup2(fd->fd_in[(*j)], STDIN_FILENO);
+		close(fd->fd_in[(*j)]);
+	}
+	else if (!fd->flag_in)
+		close(fd->saved_in);
 }
 
 int	open_redirect_in(t_fds *fd, char **lst)
@@ -258,10 +263,7 @@ int	open_redirect_in(t_fds *fd, char **lst)
 		else
 			i++;
 	}
-	if (fd->flag_in)
-		dup_in(fd, &j);
-	else if (!fd->flag_in)
-		close (fd->saved_in);
+	dup_in(fd, &j);
 	return (1);
 }
 
@@ -303,7 +305,7 @@ int	open_appendfiles(t_fds *fd, char **lst, int *i, int *j)
 		return (fd->fd_out[(*j)]);
 	}
 	close(fd->fd_out[(*j)]);
-	fd->flag_out = 1;
+	fd->flag_append = 1;
 	(*i)++;
 	if (lst[(*i)] && !ft_strcmp(lst[(*i)] , ">>"))
 	{
@@ -318,6 +320,13 @@ void	dup_out(t_fds *fd, int *j)
 	if (fd->flag_out)
 	{
 		fd->fd_out[(*j)] = open(fd->out_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		free(fd->out_file);
+		dup2(fd->fd_out[(*j)], STDOUT_FILENO);
+		close(fd->fd_out[(*j)]);
+	}
+	else if (fd->flag_append)
+	{
+		fd->fd_out[(*j)] = open(fd->out_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		free(fd->out_file);
 		dup2(fd->fd_out[(*j)], STDOUT_FILENO);
 		close(fd->fd_out[(*j)]);
@@ -480,7 +489,7 @@ void	check_files_in_child(t_fds *fd)
 
 void	restore_in_out(t_fds *fd)
 {
-	if (fd->flag_out)
+	if (fd->flag_out || fd->flag_append)
 	{
 		dup2(fd->saved_out, STDOUT_FILENO);
 		close (fd->saved_out);
@@ -492,7 +501,8 @@ void	restore_in_out(t_fds *fd)
 	}
 	if (fd->temp)
 		free(fd->temp);
-	free(fd);
+	if (fd)
+		free(fd);
 }
 
 void	exit_cmd_not_found(t_shell *shell, t_token *tokens, t_parser *parser, t_fds *fd)
@@ -500,6 +510,17 @@ void	exit_cmd_not_found(t_shell *shell, t_token *tokens, t_parser *parser, t_fds
 	char	*temp;
 	char	*string;
 
+	if (shell->cmd_list[0][0] == '.')
+	{
+		temp = ft_strjoin("ARSSH: ", shell->cmd_list[0]);
+		string = ft_strjoin(temp,": permission denied\n");
+		free(temp);
+		write(2, string, ft_strlen(string));
+		free(string);
+		free(fd);
+		exit_execution(shell, tokens, parser);
+		exit(126);
+	}
 	temp = ft_strjoin("command not found: ", shell->cmd_list[0]);
 	string = ft_strjoin(temp,"\n");
 	free(temp);
@@ -524,13 +545,17 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 	shell->cmd_list = create_list(tokens, fd, shell);
 	if (!shell->cmd_list)
 		return ;
-	if(fd->saved_out)
-		shell->fd_out = fd->saved_out;
-	if(ft_executor(shell, tokens))
+	if(fd->flag_out || fd->flag_append)
+		shell->fd_out = dup(fd->fd_out[0]);
+	if (ft_executor(shell, tokens))
 	{
 		if(shell->fd_out)
 			close(shell->fd_out);
-		free(fd);
+		if (fd->flag_out || fd->flag_append)
+		{
+			dup2(fd->saved_out, STDOUT_FILENO);
+			close (fd->saved_out);
+		}
 		ft_free_2d(shell->cmd_list);
 		// exit_execution(shell,tokens,parser);
 		return ;
@@ -539,6 +564,7 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 	if (id == 0)
 	{
 		g_exit_status = 0;
+		// shell->exit_status = 0;
 		j = 0;
 		check_files_in_child(fd);
 		get_paths(shell);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 14:24:34 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/20 16:17:57 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/20 22:42:09 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ typedef struct s_fds
 	int				saved_in;
 	int				flag_out;
 	int				flag_in;
+	int				flag_append;
 	int				flag_expand;
 	int				flag_heredoc;
 	char			*out_file;

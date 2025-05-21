@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 20:41:23 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/20 18:11:30 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/21 11:31:12 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ void	init_minishell(t_shell *shell)
 	{
 		shell->exit_status = g_exit_status;
 		g_exit_status = 0;
-		shell->prompt = readline("\033[93mArab Spring 🐣🐥 -> \033[0m");
+		shell->prompt = readline("\033[93mARSSH 🐣🐥-> \033[0m");
 		if (!shell->prompt)
 		{
 			g_exit_status = shell->exit_status;

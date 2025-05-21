@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
+/*   By: qais <qais@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 11:05:04 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/20 17:23:30 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/20 23:29:54 by qais             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,6 +285,7 @@ void    open_heredoc(t_shell *shell, char **lst, t_fds *fds)
     fds->temp = ft_strdup(".temp");
     j = 0;
     fds->flag_expand = 1;
+	fds->fd_heredoc = 0;
     struct sigaction original_sa;
     sigaction(SIGINT, NULL, &original_sa);
     sa.sa_handler = SIG_IGN;
