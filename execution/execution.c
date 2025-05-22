@@ -6,22 +6,22 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 14:22:32 by qhatahet          #+#    #+#             */
-/*   Updated: 2025/05/21 19:20:27 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/22 19:25:50 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Headers/minishell.h"
 
-extern int g_exit_status;
+extern int	g_exit_status;
 
 int	how_many_pipes(t_token *tokens)
 {
-	t_token *temp;
+	t_token	*temp;
 	int		i;
 
 	i = 0;
 	temp = tokens;
-	while(temp)
+	while (temp)
 	{
 		temp = temp->next;
 		i++;
@@ -68,7 +68,7 @@ int	is_there_redirect(t_token *tokens)
 int	is_there_command(t_token *tokens)
 {
 	t_token	*temp;
-	int			i;
+	int		i;
 
 	temp = tokens;
 	i = 0;
@@ -84,7 +84,7 @@ int	is_there_command(t_token *tokens)
 int	is_there_heredoc(t_token *tokens)
 {
 	t_token	*temp;
-	int			i;
+	int		i;
 
 	temp = tokens;
 	i = 0;
@@ -99,12 +99,12 @@ int	is_there_heredoc(t_token *tokens)
 
 int	count_content(t_token *tokens)
 {
-	int	i;
+	int		i;
 	t_token	*temp;
 
 	temp = tokens;
 	i = 0;
-	while(temp->content[i])
+	while (temp->content[i])
 		i++;
 	return (i);
 }
@@ -114,7 +114,7 @@ char	**get_env(t_env *env)
 	t_env	*temp;
 	char	**envp;
 	char	*tmp;
-	int			i;
+	int		i;
 
 	temp = env;
 	envp = ft_calloc((env_count(env) + 1), sizeof(char *));
@@ -160,7 +160,7 @@ char	**rearrange_list_redirect(t_token *tokens)
 			return (NULL);
 		free(temp->content[i]);
 		temp->content[i] = ft_strdup("ta3rees");
-		j++;	
+		j++;
 	}
 	i = 0;
 	while (temp->content[i] && i < count_content(tokens))
@@ -177,11 +177,10 @@ char	**rearrange_list_redirect(t_token *tokens)
 		}
 	}
 	lst[j] = NULL;
-	i = 0;
 	return (lst);
 }
 
-char **rearrange_list(t_token *tokens)
+char	**rearrange_list(t_token *tokens)
 {
 	char	**list;
 	t_token	*temp;
@@ -195,9 +194,9 @@ char **rearrange_list(t_token *tokens)
 	while (temp->content[i])
 	{
 		if (temp->content[i])
-    		list[i] = ft_strdup(temp->content[i]);
+			list[i] = ft_strdup(temp->content[i]);
 		else
-    		list[i] = NULL;
+			list[i] = NULL;
 		if (!list[i])
 			return (NULL);
 		i++;
@@ -223,7 +222,7 @@ int	open_infiles(t_fds *fd, char **lst, int *i, int *j)
 	fd->flag_in = 1;
 	(*i)++;
 	close(fd->fd_in[(*j)]);
-	if (lst[(*i)] && !ft_strcmp(lst[(*i)] , "<"))
+	if (lst[(*i)] && !ft_strcmp(lst[(*i)], "<"))
 	{
 		free(fd->in_file);
 		fd->in_file = NULL;
@@ -283,7 +282,7 @@ int	open_outfiles(t_fds *fd, char **lst, int *i, int *j)
 	close(fd->fd_out[(*j)]);
 	fd->flag_out = 1;
 	(*i)++;
-	if (lst[(*i)] && !ft_strcmp(lst[(*i)] , ">"))
+	if (lst[(*i)] && !ft_strcmp(lst[(*i)], ">"))
 	{
 		free(fd->out_file);
 		fd->out_file = NULL;
@@ -307,7 +306,7 @@ int	open_appendfiles(t_fds *fd, char **lst, int *i, int *j)
 	close(fd->fd_out[(*j)]);
 	fd->flag_append = 1;
 	(*i)++;
-	if (lst[(*i)] && !ft_strcmp(lst[(*i)] , ">>"))
+	if (lst[(*i)] && !ft_strcmp(lst[(*i)], ">>"))
 	{
 		free(fd->out_file);
 		fd->out_file = NULL;
@@ -317,21 +316,24 @@ int	open_appendfiles(t_fds *fd, char **lst, int *i, int *j)
 
 void	dup_out(t_fds *fd, int *j)
 {
+	int	i;
+
+	i = (*j);
 	if (fd->flag_out)
 	{
-		fd->fd_out[(*j)] = open(fd->out_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		fd->fd_out[i] = open(fd->out_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		free(fd->out_file);
-		dup2(fd->fd_out[(*j)], STDOUT_FILENO);
-		close(fd->fd_out[(*j)]);
+		dup2(fd->fd_out[i], STDOUT_FILENO);
+		close(fd->fd_out[i]);
 	}
 	else if (fd->flag_append)
 	{
-		fd->fd_out[(*j)] = open(fd->out_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		fd->fd_out[i] = open(fd->out_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		free(fd->out_file);
-		dup2(fd->fd_out[(*j)], STDOUT_FILENO);
-		close(fd->fd_out[(*j)]);
+		dup2(fd->fd_out[i], STDOUT_FILENO);
+		close(fd->fd_out[i]);
 	}
-	else if (!fd->flag_out)
+	else if (!fd->flag_out || !fd->flag_append)
 		close (fd->saved_out);
 }
 
@@ -370,15 +372,14 @@ int	redirect(char **lst, t_shell *shell, t_fds *fd)
 	i = 0;
 	while (lst[i])
 	{
-		if (!ft_strcmp(lst[i], "<<"))
+		if (!ft_strcmp(lst[i++], "<<"))
 		{
 			open_heredoc(shell, lst, fd);
-			break;
+			break ;
 		}
-		i++;
 	}
-	i = 0;
-	while (lst[i])
+	i = -1;
+	while (lst[++i])
 	{
 		if (!ft_strcmp(lst[i], ">") || !ft_strcmp(lst[i], ">>")
 			|| !ft_strcmp(lst[i], "<"))
@@ -387,11 +388,10 @@ int	redirect(char **lst, t_shell *shell, t_fds *fd)
 				return (0);
 			if (open_redirect_in(fd, lst) != 1)
 				return (0);
-			break;
+			break ;
 		}
-		i++;
 	}
-	return(1);
+	return (1);
 }
 
 int	redirections(char **lst, int *i)
@@ -410,9 +410,9 @@ char	**open_files(char **lst, t_token *tokens, t_fds *fd, t_shell *shell)
 
 	i = 0;
 	j = 0;
-	if(!redirect(lst, shell, fd))
+	if (!redirect(lst, shell, fd))
 		return (NULL);
-	new_list = ft_calloc((count_content(tokens) + 1) , sizeof(char *));
+	new_list = ft_calloc((count_content(tokens) + 1), sizeof(char *));
 	while (lst[i])
 	{
 		if (!redirections(lst, &i))
@@ -435,12 +435,12 @@ char	**create_list(t_token *tokens, t_fds *fd, t_shell *shell)
 {
 	char	**lst;
 	char	**redirect_lst;
-	
-	if (redirect_first_arg(tokens))// <in ls after rearrange_list_redirect ls <in
+
+	if (redirect_first_arg(tokens))
 		lst = rearrange_list_redirect(tokens);
 	else
-		lst = rearrange_list(tokens);//turn the tokens to 2d array
-	if (is_there_redirect(tokens))//if there is redirections in the 2d array open all the fucking files and remove them from the list
+		lst = rearrange_list(tokens);
+	if (is_there_redirect(tokens))
 	{
 		redirect_lst = open_files(lst, tokens, fd, shell);
 		if (!redirect_lst)
@@ -475,7 +475,7 @@ void	check_files_in_child(t_fds *fd)
 		close(fds);
 		free(fd->temp);
 	}
-	if (fd->flag_out)
+	if (fd->flag_out && fd->flag_append)
 	{
 		close (fd->fd_out[0]);
 		close (fd->saved_out);
@@ -507,7 +507,8 @@ void	restore_in_out(t_fds *fd)
 		free(fd);
 }
 
-void	exit_cmd_not_found(t_shell *shell, t_token *tokens, t_parser *parser, t_fds *fd)
+void	exit_cmd_not_found(t_shell *shell, t_token *tokens
+	, t_parser *parser, t_fds *fd)
 {
 	char	*temp;
 	char	*string;
@@ -515,7 +516,7 @@ void	exit_cmd_not_found(t_shell *shell, t_token *tokens, t_parser *parser, t_fds
 	if (shell->cmd_list[0][0] == '.')
 	{
 		temp = ft_strjoin("ARSSH: ", shell->cmd_list[0]);
-		string = ft_strjoin(temp,": permission denied\n");
+		string = ft_strjoin(temp, ": permission denied\n");
 		free(temp);
 		write(2, string, ft_strlen(string));
 		free(string);
@@ -524,7 +525,7 @@ void	exit_cmd_not_found(t_shell *shell, t_token *tokens, t_parser *parser, t_fds
 		exit(126);
 	}
 	temp = ft_strjoin("command not found: ", shell->cmd_list[0]);
-	string = ft_strjoin(temp,"\n");
+	string = ft_strjoin(temp, "\n");
 	free(temp);
 	write(2, string, ft_strlen(string));
 	free(string);
@@ -537,7 +538,7 @@ void	execute_cmd_with_path(t_shell *shell, t_token *tokens,
 		t_parser *parser, t_fds *fd)
 {
 	if (!access(shell->cmd_list[0], X_OK))
-				shell->cmd = ft_strdup(shell->cmd_list[0]);
+		shell->cmd = ft_strdup(shell->cmd_list[0]);
 	else
 		exit_cmd_not_found(shell, tokens, parser, fd);
 }
@@ -546,7 +547,7 @@ int	execute_built_in(t_shell *shell, t_token *tokens, t_fds *fd)
 {
 	if (ft_executor(shell, tokens))
 	{
-		if(shell->fd_out)
+		if (shell->fd_out)
 			close(shell->fd_out);
 		if (fd->flag_out || fd->flag_append)
 		{
@@ -554,28 +555,91 @@ int	execute_built_in(t_shell *shell, t_token *tokens, t_fds *fd)
 			close (fd->saved_out);
 		}
 		ft_free_2d(shell->cmd_list);
-		// exit_execution(shell,tokens,parser);
 		return (1);
 	}
-	return(0);
+	return (0);
 }
 
 void	get_exit_status(int id)
 {
-	int status;
+	int	status;
 
 	waitpid(id, &status, 0);
-    if (WIFEXITED(status))
+	if (WIFEXITED(status))
 		g_exit_status = WEXITSTATUS(status);
-    else if (WIFSIGNALED(status))
+	else if (WIFSIGNALED(status))
 		g_exit_status = 128 + WTERMSIG(status);
+}
+
+void	link_cmd_with_path(t_shell *shell, t_token *tokens
+	, t_fds *fd, t_parser *parser)
+{
+	int	j;
+
+	j = 0;
+	while (shell->paths && shell->paths[j])
+	{
+		shell->cmd = ft_strjoin(shell->paths[j], shell->cmd_list[0]);
+		if (!shell->cmd)
+			exit(EXIT_FAILURE);
+		if (!access(shell->cmd, X_OK))
+			break ;
+		free(shell->cmd);
+		shell->cmd = NULL;
+		j++;
+	}
+	if (!shell->cmd)
+		exit_cmd_not_found(shell, tokens, parser, fd);
+	free(fd);
+}
+
+void	execute_child(t_shell *shell, t_token *tokens
+	, t_fds *fd, t_parser *parser)
+{
+	g_exit_status = 0;
+	check_files_in_child(fd);
+	get_paths(shell);
+	if (!shell->paths)
+	{
+		shell->paths = NULL;
+		exit_cmd_not_found(shell, tokens, parser, fd);
+	}
+	if (!shell->enviroment)
+		shell->enviroment = get_env(shell->env);
+	if (shell->cmd_list[0]
+		&& (shell->cmd_list[0][0] == '.' || shell->cmd_list[0][0] == '/'))
+		execute_cmd_with_path(shell, tokens, parser, fd);
+	else if (shell->cmd_list[0])
+		link_cmd_with_path(shell, tokens, fd, parser);
+	else
+	{
+		exit_execution(shell, tokens, parser);
+		free(fd);
+		exit(0);
+	}
+	signal(SIGQUIT,SIG_DFL);
+	execve(shell->cmd, shell->cmd_list, shell->enviroment);
+}
+
+void	cleanup_execute_command(t_shell *shell, t_fds *fd)
+{
+	restore_in_out(fd);
+	if (shell->cmd_list)
+	{
+		ft_free_2d(shell->cmd_list);
+		shell->cmd_list = NULL;
+	}
+	if (shell->enviroment)
+	{
+		ft_free_2d(shell->enviroment);
+		shell->enviroment = NULL;
+	}
 }
 
 void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 {
 	t_fds	*fd;
 	int		id;
-	int		j;
 
 	fd = ft_calloc(1, sizeof(t_fds));
 	fd->temp = NULL;
@@ -584,62 +648,16 @@ void	execute_command(t_token *tokens, t_shell *shell, t_parser *parser)
 	shell->cmd_list = create_list(tokens, fd, shell);
 	if (!shell->cmd_list)
 		return ;
-	if(fd->flag_out || fd->flag_append)
+	if (fd->flag_out || fd->flag_append)
 		shell->fd_out = fd->fd_out[0];
 	if (execute_built_in(shell, tokens, fd))
 		return ;
 	id = fork();
 	if (id == 0)
-	{
-		g_exit_status = 0;
-		j = 0;
-		check_files_in_child(fd);
-		get_paths(shell);
-		if (!shell->paths)
-		{
-			shell->paths = NULL;
-			exit_cmd_not_found(shell, tokens, parser, fd);
-		}
-		if (!shell->enviroment)
-			shell->enviroment = get_env(shell->env);
-		if (shell->cmd_list[0] && (shell->cmd_list[0][0] == '.' || shell->cmd_list[0][0] == '/'))
-			execute_cmd_with_path(shell, tokens, parser, fd);
-		else if (shell->cmd_list[0])
-		{
-			while (shell->paths && shell->paths[j])
-			{
-				shell->cmd = ft_strjoin(shell->paths[j], shell->cmd_list[0]);
-				if (!shell->cmd)
-					exit(EXIT_FAILURE);
-				if (!access(shell->cmd, X_OK))
-					break;
-				free(shell->cmd);
-				shell->cmd = NULL;
-				j++;
-			}
-			if (!shell->cmd)
-				exit_cmd_not_found(shell, tokens, parser, fd);
-		}
-		else
-		{
-			exit_execution(shell, tokens, parser);
-			free(fd);
-			exit(0);
-		}
-		execve(shell->cmd, shell->cmd_list, shell->enviroment);
-	}
+		execute_child(shell, tokens, fd, parser);
+	signal(SIGINT,SIG_IGN);
 	get_exit_status(id);
-	restore_in_out(fd);
-	if (shell->cmd_list)
-	{
-		ft_free_2d(shell->cmd_list);
-		shell->cmd_list = NULL;
-	}
-	if(shell->enviroment)
-	{
-		ft_free_2d(shell->enviroment);
-		shell->enviroment = NULL;
-	}
+	cleanup_execute_command(shell, fd);
 }
 
 void	execute(t_shell *shell, t_token *tokens, t_parser *parser)
@@ -650,10 +668,12 @@ void	execute(t_shell *shell, t_token *tokens, t_parser *parser)
 	if (how_many_pipes(tokens) > 0)
 	{
 		printf("there is pipes : %i\n", how_many_pipes(tokens));
-		execute_multiple(tokens,shell,parser);
+		execute_multiple(tokens, shell, parser);
+		signal_handler();
 	}
 	else
 	{
 		execute_command(tokens, shell, parser);
+		signal_handler();
 	}
 }

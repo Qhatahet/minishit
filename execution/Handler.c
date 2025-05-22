@@ -6,7 +6,7 @@
 /*   By: qhatahet <qhatahet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:23:53 by oalananz          #+#    #+#             */
-/*   Updated: 2025/05/20 19:30:37 by qhatahet         ###   ########.fr       */
+/*   Updated: 2025/05/22 19:22:49 by qhatahet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,10 +145,6 @@ char **list(t_token *tokens)
 		list = list_redirect(tokens);
 	else
 		list = copy_command_line(tokens);
-    // for(int i = 0;list[i] ; i++)
-    // {   
-    //     fprintf(stderr,"%d:%s\n",i,list[i]);
-    // }   
 	return (list);
 }
 
@@ -176,7 +172,7 @@ static void heredoc_signal_handler(int sig)
     exit(128 + SIGINT);
 }
 
-int    open_heredocs(t_shell *shell,char *exit_heredoc, char *file)
+int    open_heredocs(t_shell *shell, char *exit_heredoc, char *file)
 {
     char *text = NULL;
     if (exit_heredoc[0] == '\'' || exit_heredoc[0] == '\"')
